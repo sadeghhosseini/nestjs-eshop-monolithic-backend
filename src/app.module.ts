@@ -23,9 +23,48 @@ import { PaymentsService } from './payments/payments.service';
 import { ProductsService } from './products/products.service';
 import { PropertiesService } from './properties/properties.service';
 import { UsersService } from './users/users.service';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { Address } from './addresses/address.entity';
+import { Cart } from './carts/cart.entity';
+import { Category } from './categories/category.entity';
+import { Order } from './orders/order.entity';
+import { Payment } from './payments/payment.entity';
+import { Product } from './products/product.entity';
+import { Property } from './properties/property.entity';
+import { User } from './users/user.entity';
+import { OrderItems } from './orders/orderItems.entity';
+import { CartItems } from './carts/cartItems.entity';
+import { Comment } from './comments/comment.entity';
+import { Image } from './images/image.entity';
+import { OrderAddress } from './orders/orderAddress.entity';
 
 @Module({
-  imports: [],
+  imports: [
+    TypeOrmModule.forRoot({
+      type: 'mysql',
+      host: 'mysql-db',//container name for mysql docker container
+      port: 3306,
+      username: 'root',
+      password: 'root',
+      database: 'eshop_db',
+      entities: [
+        Address,
+        Cart,
+        Category,
+        Comment,
+        Image,
+        Order,
+        OrderAddress,
+        Payment,
+        Product,
+        Property,
+        User,
+        OrderItems,
+        CartItems,
+      ],
+      synchronize: true,//remove in production (applies changes to entity classes -migrations files- to database on each application start)
+    }),    
+  ],
   controllers: [
     AppController,
     AddressesController,
