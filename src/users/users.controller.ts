@@ -1,4 +1,20 @@
-import { Controller } from '@nestjs/common';
+import { Controller, Get, Param, Patch } from '@nestjs/common';
 
-@Controller('users')
-export class UsersController {}
+@Controller()
+export class UsersController {
+
+    @Get('/users')
+    getAll() {
+        
+    }
+    
+    @Get('/users/:id')
+    get(@Param('id') userId: string) {
+        
+    }
+    
+    @Patch('/users/:id')
+    update(@Param('id') userId: string) {
+
+    }
+}
