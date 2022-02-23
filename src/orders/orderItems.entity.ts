@@ -2,7 +2,7 @@ import { Product } from "src/products/product.entity";
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { Order } from "./order.entity";
 
-@Entity()
+@Entity({ name: 'order_items' })
 export class OrderItems {
 
     @PrimaryGeneratedColumn()
@@ -10,13 +10,13 @@ export class OrderItems {
 
     @Column()
     title: string;
-    
+
     @Column()
     description: string;
-    
+
     @Column()
     price: number;
-    
+
     @Column()
     quantity: number;
 

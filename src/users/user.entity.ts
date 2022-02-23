@@ -3,17 +3,17 @@ import { Cart } from "src/carts/cart.entity";
 import { Order } from "src/orders/order.entity";
 import { Column, Entity, JoinColumn, JoinTable, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 
-@Entity()
+@Entity({ name: 'users' })
 export class User {
     @PrimaryGeneratedColumn()
     id: number;
-    
+
     @Column()
     name: string;
-    
+
     @Column()
     email: string;
-    
+
     @Column()
     password: string;
 

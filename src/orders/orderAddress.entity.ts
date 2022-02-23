@@ -1,7 +1,7 @@
 import { Column, Entity, JoinColumn, OneToOne, PrimaryColumn, PrimaryGeneratedColumn, TableForeignKey } from "typeorm";
 import { Order } from "./order.entity";
 
-@Entity()
+@Entity({ name: 'order_addresses' })
 export class OrderAddress {
 
     @PrimaryGeneratedColumn()

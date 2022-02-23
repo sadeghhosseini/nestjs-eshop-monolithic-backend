@@ -6,24 +6,24 @@ import { OrderItems } from "src/orders/orderItems.entity";
 import { Property } from "src/properties/property.entity";
 import { ManyToMany, PrimaryGeneratedColumn, Column, OneToMany, JoinTable, Entity, ManyToOne } from 'typeorm';
 
-@Entity()
+@Entity({ name: 'products' })
 export class Product {
     @PrimaryGeneratedColumn()
     id: number;
 
-    
+
     @Column()
     title: string;
-    
+
     @Column()
     description: string;
-    
+
     @Column()
     quantity: number;
-    
+
     @Column()
     price: number;
-    
+
     @ManyToOne(() => Category)
     category: Category;
 
@@ -37,6 +37,6 @@ export class Product {
     comments: Comment[];
 
     @ManyToMany(() => Image, image => image.products)
-    @JoinTable({name: "products_images"})
+    @JoinTable({ name: "products_images" })
     images: Image[];
 }

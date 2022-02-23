@@ -11,7 +11,7 @@ enum Status {
     shipped = 'shipped',
 }
 
-@Entity()
+@Entity({ name: 'orders' })
 export class Order {
 
     @PrimaryGeneratedColumn()

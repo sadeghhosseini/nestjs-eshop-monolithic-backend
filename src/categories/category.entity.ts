@@ -2,7 +2,7 @@ import { Product } from 'src/products/product.entity';
 import { Property } from 'src/properties/property.entity';
 import { OneToMany, ManyToOne, JoinTable, Column, PrimaryGeneratedColumn, Entity } from 'typeorm';
 
-@Entity()
+@Entity({ name: 'categories' })
 export class Category {
     @PrimaryGeneratedColumn()
     id: number;
@@ -12,7 +12,7 @@ export class Category {
 
     @Column()
     description: string;
-    
+
     @ManyToOne(() => Category, category => category.children)
     parent: Category;
 
