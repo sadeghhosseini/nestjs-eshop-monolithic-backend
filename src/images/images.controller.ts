@@ -1,11 +1,16 @@
-import { Controller, Delete, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, UseInterceptors } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { FormDataRequest } from 'nestjs-form-data';
+import { CreateImageDto } from './dto/create-image.dto';
 
 @Controller()
 export class ImagesController {
 
     @Post('/images')
-    create() {
-
+    @FormDataRequest()
+    create(@Body() body: CreateImageDto) {
+        console.log('body', body);
+        return body;
     }
 
     @Get('/images')

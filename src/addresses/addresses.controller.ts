@@ -1,7 +1,13 @@
 import { Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
+import { AddressesService } from './addresses.service';
 
 @Controller()
 export class AddressesController {
+
+    constructor(private addressesService: AddressesService) {
+
+    }
+
     @Post('/addresses')
     create() {
 

@@ -37,41 +37,52 @@ import { CartItems } from './carts/cartItems.entity';
 import { Comment } from './comments/comment.entity';
 import { Image } from './images/image.entity';
 import { OrderAddress } from './orders/orderAddress.entity';
-import { EShopModule } from './eshop.module';
+import { NestjsFormDataModule } from 'nestjs-form-data';
 
 @Module({
-  imports: [
-    EShopModule,
-    TypeOrmModule.forRoot({
-      type: 'mysql',
-      host: 'mysql-db',//container name for mysql docker container
-      port: 3306,
-      username: 'root',
-      password: 'root',
-      database: 'eshop_db',
-      entities: [
-        Address,
-        Cart,
-        Category,
-        Comment,
-        Image,
-        Order,
-        OrderAddress,
-        Payment,
-        Product,
-        Property,
-        User,
-        OrderItems,
-        CartItems,
-      ],
-      synchronize: true,//remove in production (applies changes to entity classes -migrations files- to database on each application start)
-    }),
-  ],
-  controllers: [
-    AppController,
-  ],
-  providers: [
-    AppService,
-  ],
+    imports: [
+        NestjsFormDataModule,
+        TypeOrmModule.forFeature([
+            Address,
+            Cart,
+            Category,
+            Comment,
+            Image,
+            Order,
+            OrderAddress,
+            Payment,
+            Product,
+            Property,
+            User,
+            OrderItems,
+            CartItems,
+        ])
+    ],
+    controllers: [
+        AddressesController,
+        AuthController,
+        CartsController,
+        CategoriesController,
+        CommentsController,
+        ImagesController,
+        OrdersController,
+        PaymentsController,
+        ProductsController,
+        PropertiesController,
+        UsersController,
+    ],
+    providers: [
+        AddressesService,
+        AuthService,
+        CartsService,
+        CategoriesService,
+        CommentsService,
+        ImagesService,
+        OrdersService,
+        PaymentsService,
+        ProductsService,
+        PropertiesService,
+        UsersService,
+    ],
 })
-export class AppModule { }
+export class EShopModule { }
