@@ -1,0 +1,27 @@
+version: "3"
+
+services:
+  nest:
+    build: .
+    container_name: nest-app
+    restart: always
+    ports: 
+      - 8080:3000
+    volumes:
+      - ./code:/usr/src/app
+    dns:
+      - 178.22.122.100 #shecan-anti_sanction
+      - 185.51.200.2 #shecan-anti_sanction
+  mysql:
+    image: mysql:5.7
+    container_name: mysql-db
+    restart: always
+    environment:
+      - MYSQL_DATABASE=eshop_db
+      - MYSQL_ROOT_PASSWORD=root
+    expose:
+      - '3306'
+    ports: #remove on production
+      - '3306:3306'
+    volumes:
+      - ./db-files:/var/lib/mysql
