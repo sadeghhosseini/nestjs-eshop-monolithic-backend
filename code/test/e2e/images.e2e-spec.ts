@@ -1,6 +1,6 @@
 import { INestApplication } from "@nestjs/common";
-import { ImageFactory } from "./factories.helper";
-import { setupTestModule } from "./helpers";
+import { ImageFactory } from "test/factories.helper";
+import { setupTestModule } from "test/helpers";
 import * as request from 'supertest';
 import { promises } from 'fs';
 import * as path from "path";

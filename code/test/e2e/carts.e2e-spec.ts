@@ -19,8 +19,8 @@ import { Property } from "src/properties/property.entity";
 import { User } from "src/users/user.entity";
 import * as request from 'supertest';
 import { getConnection } from "typeorm";
-import { CartFactory, CartItemsFactory, CategoryFactory, ProductFactory } from "./factories.helper";
-import { ValidationException } from "./validation.exception";
+import { CartFactory, CartItemsFactory, CategoryFactory, ProductFactory } from "test/factories.helper";
+import { ValidationException } from "test/validation.exception";
 
 
 describe('PATCH /carts/items/:id - validation tests', () => {
