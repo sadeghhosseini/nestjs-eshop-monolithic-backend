@@ -1,17 +1,20 @@
-import { INestApplication } from "@nestjs/common";
-import { ImageFactory } from "test/factories.helper";
-import { setupTestModule } from "test/helpers";
+import {INestApplication} from '@nestjs/common';
+import {ImageFactory} from 'test/factories.helper';
+import {setupTestModule} from 'test/helpers';
 import * as request from 'supertest';
-import { promises } from 'fs';
-import * as path from "path";
-
+import {promises} from 'fs';
+import * as path from 'path';
 
 describe(`POST /images`, () => {
     let app: INestApplication;
 
-    beforeAll(async () => {
+    beforeEach(async () => {
         app = await setupTestModule();
     });
+
+    afterEach(async() => {
+        await app.close();
+    })
 
     describe(`validation test`, () => {
         it(`returns 400 file.wrongFileFormat`, async () => {
@@ -51,7 +54,6 @@ describe(`POST /images`, () => {
                 .field('images[1][path]', 'images');
 
             expect(response.status).toEqual(201);
-
-        })
-    })
+        });
+    });
 });

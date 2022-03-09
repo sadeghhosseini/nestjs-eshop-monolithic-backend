@@ -1,19 +1,23 @@
-import { faker } from '@faker-js/faker';
-import { Cart } from 'src/carts/cart.entity';
-import { CartItems } from 'src/carts/cartItems.entity';
-import { Category } from 'src/categories/category.entity';
-import { Product } from 'src/products/product.entity';
-import { User } from 'src/users/user.entity';
-import { EntityTarget, getRepository } from 'typeorm';
-import { promises } from 'fs';
+import {faker} from '@faker-js/faker';
+import {Cart} from 'src/carts/cart.entity';
+import {CartItems} from 'src/carts/cartItems.entity';
+import {Category} from 'src/categories/category.entity';
+import {Product} from 'src/products/product.entity';
+import {User} from 'src/users/user.entity';
+import {EntityTarget, getRepository} from 'typeorm';
+import {promises} from 'fs';
+import {Property} from "../src/properties/property.entity";
 
 abstract class Factory {
     protected Entity: EntityTarget<unknown> = null;
     protected recordCount: number = 1;
+
     constructor() {
         this.Entity = this.getEntityClass();
     }
+
     abstract fake(data?: Record<string, any>);
+
     abstract getEntityClass(): EntityTarget<unknown>;
 
     async make(data?: Record<string, any>) {
@@ -42,17 +46,17 @@ abstract class Factory {
             }
         } else {
             let result = [];
-            for (let i = 0; i < this.recordCount; ++i) {
-                let fakeData = await this.make(data);
+            let fakeData = await this.make(data);
+            for (let i = 0; i < fakeData.length; ++i) {
                 try {
-                    let insertResult = await repository.insert(fakeData);
+                    let insertResult = await repository.insert(fakeData[i]);
                     const pkLabel = Object.keys(insertResult.identifiers?.[0] ?? [])[0];
                     const pkValue = Object.values(insertResult.identifiers?.[0] ?? [])[0];
                     result.push({
-                        ...fakeData,
+                        ...fakeData[i],
                         [pkLabel]: pkValue,
                     });
-                    return result;
+                    // return result;
                 } catch (e) {
                     console.log('Factory - create - error - 2', e);
                 }
@@ -79,8 +83,8 @@ export class ProductFactory extends Factory {
     async fake(data?: Record<string, any>) {
         return {
             title: data?.title ?? faker.commerce.product(),
-            quantity: data?.quantity ?? faker.datatype.number({ min: 0, max: 10 }),
-            price: data?.price ?? faker.datatype.number({ min: 10000, max: 1000000 }),
+            quantity: data?.quantity ?? faker.datatype.number({min: 0, max: 10}),
+            price: data?.price ?? faker.datatype.number({min: 10000, max: 1000000}),
             description: data?.description ?? faker.commerce.productDescription(),
             category_id: data?.category_id ?? (await CategoryFactory.get().create()).id,
         };
@@ -154,7 +158,7 @@ export class CartItemsFactory extends Factory {
     async fake(data?: Record<string, any>) {
         return {
             cart_id: data?.cart_id ?? (await CartFactory.get().create()).id,
-            quantity: data?.quantity ?? faker.datatype.number({ min: 0, max: 100 }),
+            quantity: data?.quantity ?? faker.datatype.number({min: 0, max: 100}),
             product_id: data?.product_id ?? (await ProductFactory.get().create()).id,
         };
     }
@@ -165,15 +169,33 @@ export class ImageFactory extends Factory {
     static get() {
         return new ImageFactory();
     }
+
     async fake(data?: Record<string, any>) {
         return {
             file: await promises.readFile('test/resources/test.png'),
             path: 'images',
         }
     }
+
     getEntityClass(): EntityTarget<unknown> {
         return Image;
     }
+}
 
+export class PropertyFactory extends Factory {
+    static get() {
+        return new PropertyFactory();
+    }
+
+    async fake(data?: Record<string, any>) {
+        return {
+            title: faker.word.noun(4),
+            isVisible: true,
+        }
+    }
+
+    getEntityClass(): EntityTarget<unknown> {
+        return Property;
+    }
 }
 

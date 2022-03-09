@@ -1,11 +1,15 @@
-import { Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
+import {Body, Controller, Delete, Get, Param, Patch, Post} from '@nestjs/common';
+import {CreateProductDto} from "./dto/create-product.dto";
+import {ProductsService} from "./products.service";
 
 @Controller()
 export class ProductsController {
-
+    constructor(private service: ProductsService) {
+    }
     @Post('/products')
-    create() {
-
+    async create(@Body() body: CreateProductDto) {
+        await this.service.create(body);
+        return;
     }
 
     @Get('/products')

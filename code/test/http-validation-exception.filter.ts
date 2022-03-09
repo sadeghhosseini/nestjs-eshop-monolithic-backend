@@ -1,5 +1,5 @@
-import { ArgumentsHost, Catch, ExceptionFilter, HttpException, ValidationError } from "@nestjs/common";
-import { ValidationException } from "./validation.exception";
+import {ArgumentsHost, Catch, ExceptionFilter, HttpException, ValidationError} from "@nestjs/common";
+import {ValidationException} from "./validation.exception";
 
 @Catch(ValidationException)
 export class HttpValidationExceptionFilter implements ExceptionFilter {
@@ -27,13 +27,22 @@ const getErrorCodes = (errors: ValidationError[]) => {
     let result = [];
     for (let i = 0; i < errors.length; ++i) {
         const error = errors[i];
-        const ecs = Object.values(error.contexts ?? {}).map((val: { errorCode: string }) => {
-            return `${error.property}.${val.errorCode}`;
-        }) ?? [];
-        result = [
-            ...result,
-            ...ecs,
-        ];
+
+        let ecs = [];
+        const errorContexts = Object.values(error.contexts ?? {});
+        if (errorContexts.length > 0) {
+            ecs = errorContexts.map((val: { errorCode: string }) => {
+                return `${error.property}.${val.errorCode}`;
+            }) ?? [];
+        } else if (error?.constraints) {
+            ecs = Object.keys(error.constraints).map((val => {
+                return `${error.property}.${val}`;
+            })) ?? [];
+        }
+            result = [
+                ...result,
+                ...ecs,
+            ];
 
         if (error.children.length > 0) {
             const ecs = getErrorCodes(error.children);

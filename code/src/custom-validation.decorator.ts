@@ -1,6 +1,12 @@
-import { registerDecorator, ValidationArguments, ValidationOptions, ValidatorConstraint, ValidatorConstraintInterface } from "class-validator";
+import {
+    registerDecorator,
+    ValidationArguments,
+    ValidationOptions,
+    ValidatorConstraint,
+    ValidatorConstraintInterface
+} from "class-validator";
 // import {fileTypeFromBuffer} from 'file-type';
-import { Connection, Entity, EntityTarget, getConnection } from "typeorm";
+import {Connection, Entity, EntityTarget, getConnection, getRepository} from "typeorm";
 
 export function CanBeForeignKey(EntityClass: EntityTarget<unknown>, validationOptions?: ValidationOptions) {
     return function (object: Object, propertyName: string) {
@@ -12,6 +18,9 @@ export function CanBeForeignKey(EntityClass: EntityTarget<unknown>, validationOp
             options: validationOptions,
             validator: {
                 validate: async (value: any, args: ValidationArguments) => {
+                    if (!EntityClass) {
+                        throw 'null passed as EntityClass to @CanBeForeignKey';
+                    }
                     const connection = getConnection();
                     const repository = connection.getRepository(EntityClass);
                     try {
@@ -36,6 +45,7 @@ interface IsFileOptions {
     mime: ('image/jpg' | 'image/png' | 'image/jpeg')[];
     max?: number;
 }
+
 export function IsFile(options: IsFileOptions, validationOptions?: ValidationOptions) {
     return function (object: Object, propertyName: string) {
         return registerDecorator({
@@ -47,11 +57,11 @@ export function IsFile(options: IsFileOptions, validationOptions?: ValidationOpt
             validator: {
                 validate(value: any, args: ValidationArguments) {
                     //TODO implement - link -> https://github.com/typestack/class-validator#custom-validation-decorators
-                    
+
                     if (value?.mimetype && (options?.mime ?? []).includes(value?.mimetype)) {
                         return true;
                     }
-                    
+
                     // fileTypeFromBuffer(value).then(result => console.log(result))
                     //     .catch(reason => console.log(reason));
                     // throw new Error('Not Implemented');
@@ -72,16 +82,22 @@ export function MinWordLength(length: number, validationOptions?: ValidationOpti
             constraints: [],
             options: validationOptions,
             validator: {
-                validate(value: any, args: ValidationArguments) {
+                validate(value: string, args: ValidationArguments) {
                     //TODO implement - link -> https://github.com/typestack/class-validator#custom-validation-decorators
-                    throw new Error('Not Implemented');
+                    // throw new Error('Not Implemented');
+                    const numberOfWords = value.split(' ').length;
+                    return numberOfWords >= length;
                 },
             }
         });
     }
 }
 
-export function Unique(RefrencedTableRepositoryClass, validationOptions?: ValidationOptions) {
+interface UniqueOptionsType {
+    EntityClass: EntityTarget<unknown>;
+    column: string;
+}
+export function Unique(options: UniqueOptionsType, validationOptions?: ValidationOptions) {
     return function (object: Object, propertyName: string) {
         return registerDecorator({
             name: 'minWordLength',
@@ -90,9 +106,20 @@ export function Unique(RefrencedTableRepositoryClass, validationOptions?: Valida
             constraints: [],
             options: validationOptions,
             validator: {
-                validate(value: any, args: ValidationArguments) {
+                async validate(value: any, args: ValidationArguments) {
                     //TODO implement - link -> https://github.com/typestack/class-validator#custom-validation-decorators
-                    throw new Error('Not Implemented');
+                    // throw new Error('Not Implemented');
+                    if (!options) {
+                        throw 'null passed to @Unique';
+                    }
+                    const repository = getRepository(options.EntityClass);
+                    const condition = {[options.column]: value};
+                    const record = await repository.findOne(condition);
+                    if (record) { //record already exists
+                        return false;
+                    } else {
+                        return true;
+                    }
                 },
             }
         });
@@ -101,11 +128,11 @@ export function Unique(RefrencedTableRepositoryClass, validationOptions?: Valida
 
 
 /**
- * 
+ *
  * checks to see whether the path already exists in the DB
  * checks to see whether image with the same path already exists on the filesystem
- * @param validationOptions 
- * @returns 
+ * @param validationOptions
+ * @returns
  */
 export function DoesImageAlreadyExist(validationOptions?: ValidationOptions) {
     return function (object: Object, propertyName: string) {
