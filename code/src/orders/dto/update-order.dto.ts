@@ -1,5 +1,5 @@
 import { IsDefined, IsOptional, IsString, MaxLength, MinLength, ValidateIf } from "class-validator";
-import { CanBeForeignKey } from "src/custom-validation.decorator";
+import { CanBeForeignKey } from "../../custom-validation.decorator";
 
 /**
  * 

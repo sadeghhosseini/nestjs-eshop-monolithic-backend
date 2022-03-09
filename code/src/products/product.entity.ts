@@ -1,10 +1,10 @@
-import { Category } from "src/categories/category.entity";
-import { Comment } from "src/comments/comment.entity";
-import { Image } from "src/images/image.entity";
-import { Order } from "src/orders/order.entity";
-import { OrderItems } from "src/orders/orderItems.entity";
-import { Property } from "src/properties/property.entity";
 import {ManyToMany, PrimaryGeneratedColumn, Column, OneToMany, JoinTable, Entity, ManyToOne, JoinColumn} from 'typeorm';
+import { Category } from '../categories/category.entity';
+import { Comment } from '../comments/comment.entity';
+import { Image } from '../images/image.entity';
+import { Order } from '../orders/order.entity';
+import { OrderItems } from '../orders/orderItems.entity';
+import { Property } from '../properties/property.entity';
 
 @Entity({ name: 'products' })
 export class Product {

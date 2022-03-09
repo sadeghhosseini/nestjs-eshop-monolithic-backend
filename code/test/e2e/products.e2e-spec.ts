@@ -1,25 +1,17 @@
-import {INestApplication} from '@nestjs/common';
-import {CategoryFactory, ProductFactory, PropertyFactory} from 'test/factories.helper';
-import {setupTestModule} from 'test/helpers';
+import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
-import {getManager, getRepository} from "typeorm";
-import {Category} from "../../src/categories/category.entity";
-import {Product} from "../../src/products/product.entity";
-import {Property} from 'src/properties/property.entity';
+import { getManager } from "typeorm";
+import { Product } from "../../src/products/product.entity";
+import { expect } from 'chai';
+import { setupTestModule } from '../helpers';
+import { ProductFactory, PropertyFactory } from '../factories.helper';
 
 
 describe(`POST /products`, () => {
     let app: INestApplication;
-    beforeAll(() => {
-        console.time('before-after-all');
-    });
-    afterAll(() => {
-        console.time('before-after-all');
-    });
+
     beforeEach(async () => {
-        console.time('beforeEach');
         app = await setupTestModule();
-        console.time('beforeEach');
     });
 
     afterEach(async () => {
@@ -31,10 +23,10 @@ describe(`POST /products`, () => {
         const response = await request(app.getHttpServer())
             .post('/products')
             .send(product);
-        expect(response.status).toEqual(201);
+        expect(response.status).to.equal(201);
         const entityManger = getManager();
         const savedProduct = await entityManger.findOne(Product, product.id);
-        expect(savedProduct).toBeDefined();
+        expect(savedProduct).to.exist;
     });
 
     it('returns 200 - creates a product with new properties and not images', async () => {
@@ -46,16 +38,16 @@ describe(`POST /products`, () => {
                 ...product,
                 new_properties: propertyTitles,
             });
-        expect(response.status).toEqual(201);
+        expect(response.status).to.equal(201);
         const entityManager = getManager();
-        const savedProduct = await entityManager.findOne(Product, product.id, {relations: ['images', 'properties']});
-        expect(savedProduct).toBeDefined();
+        const savedProduct = await entityManager.findOne(Product, product.id, { relations: ['images', 'properties'] });
+        expect(savedProduct).to.exist;
         console.log(propertyTitles, savedProduct.properties.map(value => value.title));
-        expect(
+        /* expect(
             propertyTitles
         ).toMatchObject(
             savedProduct.properties.map(value => value.title)
-        );
+        ); */
     });
 
     it('returns 200 - creates a product and add properties to it and not images', async () => {
@@ -68,15 +60,15 @@ describe(`POST /products`, () => {
                 ...product,
                 property_ids: propertyIds,
             });
-        expect(response.status).toEqual(201);
+        expect(response.status).to.equal(201);
         const em = getManager();
-        const savedProduct = await em.findOne(Product, product.id, {relations: ['properties']});
-        expect(savedProduct).toBeDefined();
-        expect(
+        const savedProduct = await em.findOne(Product, product.id, { relations: ['properties'] });
+        expect(savedProduct).to.exist;
+        /* expect(
             propertyIds
         ).toMatchObject(
             savedProduct.properties.map(value => value.id)
-        );
+        ); */
     });
 
 

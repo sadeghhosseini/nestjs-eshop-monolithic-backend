@@ -1,6 +1,6 @@
-import {Category} from "src/categories/category.entity";
-import {Product} from "src/products/product.entity";
 import {ManyToOne, ManyToMany, JoinTable, Column, PrimaryGeneratedColumn, Entity} from 'typeorm';
+import { Category } from '../categories/category.entity';
+import { Product } from '../products/product.entity';
 
 @Entity({name: 'properties'})
 export class Property {

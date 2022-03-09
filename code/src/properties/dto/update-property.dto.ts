@@ -1,5 +1,5 @@
 import { IsBoolean, IsOptional, IsString, MinLength } from "class-validator";
-import { CanBeForeignKey } from "src/custom-validation.decorator";
+import { CanBeForeignKey } from "../../custom-validation.decorator";
 
 export class UpdatePropertyDto {
     @IsOptional()

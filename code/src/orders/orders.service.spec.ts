@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { expect } from 'chai';
 import { OrdersService } from './orders.service';
 
 describe('OrdersService', () => {
@@ -13,6 +14,6 @@ describe('OrdersService', () => {
   });
 
   it('should be defined', () => {
-    expect(service).toBeDefined();
+    expect(service).to.exist;
   });
 });

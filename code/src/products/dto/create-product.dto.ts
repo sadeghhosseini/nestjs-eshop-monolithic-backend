@@ -1,8 +1,8 @@
 import {IsArray, IsNumber, IsOptional, IsString, Min, MinLength} from "class-validator";
-import {IsFile, CanBeForeignKey, MinWordLength, Unique} from "src/custom-validation.decorator";
 import {Product} from "../product.entity";
 import {Category} from "../../categories/category.entity";
 import {Property} from "../../properties/property.entity";
+import { IsFile, CanBeForeignKey, MinWordLength, Unique } from "../../custom-validation.decorator";
 
 
 export class CreateProductDto {

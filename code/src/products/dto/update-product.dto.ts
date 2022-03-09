@@ -1,5 +1,5 @@
 import { IsArray, IsOptional, IsString, Min, MinLength } from "class-validator";
-import { IsFile, CanBeForeignKey, MinWordLength, Unique } from "src/custom-validation.decorator";
+import { IsFile, CanBeForeignKey, MinWordLength, Unique } from "../../custom-validation.decorator";
 
 export class UpdateProductDto {
 

@@ -1,7 +1,7 @@
-import { Address } from "src/addresses/address.entity";
-import { Cart } from "src/carts/cart.entity";
-import { Order } from "src/orders/order.entity";
 import { Column, Entity, JoinColumn, JoinTable, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Address } from "../addresses/address.entity";
+import { Cart } from "../carts/cart.entity";
+import { Order } from "../orders/order.entity";
 
 @Entity({ name: 'users' })
 export class User {

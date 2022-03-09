@@ -1,7 +1,7 @@
-import { Payment } from "src/payments/payment.entity";
-import { Product } from "src/products/product.entity";
-import { User } from "src/users/user.entity";
 import { Column, Entity, JoinColumn, JoinTable, ManyToMany, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Payment } from "../payments/payment.entity";
+import { Product } from "../products/product.entity";
+import { User } from "../users/user.entity";
 import { OrderAddress } from "./orderAddress.entity";
 import { OrderItems } from "./orderItems.entity";
 

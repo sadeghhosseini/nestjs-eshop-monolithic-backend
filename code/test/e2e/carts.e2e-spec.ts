@@ -5,107 +5,63 @@ import {
 } from '@nestjs/common';
 import {Test} from '@nestjs/testing';
 import {TypeOrmModule} from '@nestjs/typeorm';
-import {Address} from 'src/addresses/address.entity';
-import {AppModule} from 'src/app.module';
-import {Cart} from 'src/carts/cart.entity';
-import {CartItems} from 'src/carts/cartItems.entity';
-import {Category} from 'src/categories/category.entity';
-import {Comment} from 'src/comments/comment.entity';
-import {EShopModule} from 'src/eshop.module';
-import {HttpValidationExceptionFilter} from 'test/http-validation-exception.filter';
-import {Image} from 'src/images/image.entity';
-import {Order} from 'src/orders/order.entity';
-import {OrderAddress} from 'src/orders/orderAddress.entity';
-import {OrderItems} from 'src/orders/orderItems.entity';
-import {Payment} from 'src/payments/payment.entity';
-import {Product} from 'src/products/product.entity';
-import {Property} from 'src/properties/property.entity';
-import {User} from 'src/users/user.entity';
 import * as request from 'supertest';
 import {getConnection} from 'typeorm';
-import {
-    CartFactory,
-    CartItemsFactory,
-    CategoryFactory,
-    ProductFactory,
-} from 'test/factories.helper';
-import {ValidationException} from 'test/validation.exception';
+import {expect} from 'chai';
+import {EShopModule} from '../../src/eshop.module';
+import {Address} from '../../src/addresses/address.entity';
+import {Cart} from '../../src/carts/cart.entity';
+import {Category} from '../../src/categories/category.entity';
+import {Order} from '../../src/orders/order.entity';
+import {OrderAddress} from '../../src/orders/orderAddress.entity';
+import {Payment} from '../../src/payments/payment.entity';
+import {Product} from '../../src/products/product.entity';
+import {Property} from '../../src/properties/property.entity';
+import {User} from '../../src/users/user.entity';
+import {OrderItems} from '../../src/orders/orderItems.entity';
+import {CartItems} from '../../src/carts/cartItems.entity';
+import {ValidationException} from '../validation.exception';
+import {HttpValidationExceptionFilter} from '../http-validation-exception.filter';
+import {CartFactory, ProductFactory} from '../factories.helper';
+import {setupTestModule} from '../helpers';
 
 describe('PATCH /carts/items/:id - validation tests', () => {
     let app: INestApplication;
 
-    beforeAll(async () => {
-        const moduleRef = await Test.createTestingModule({
-            imports: [
-                EShopModule,
-                TypeOrmModule.forRoot({
-                    type: 'better-sqlite3',
-                    database: ':memory:',
-                    entities: [
-                        Address,
-                        Cart,
-                        Category,
-                        Comment,
-                        Image,
-                        Order,
-                        OrderAddress,
-                        Payment,
-                        Product,
-                        Property,
-                        User,
-                        OrderItems,
-                        CartItems,
-                    ],
-                    dropSchema: true,
-                    // logging: true,
-                    synchronize: true,
-                }),
-                TypeOrmModule.forFeature([
-                    Address,
-                    Cart,
-                    Category,
-                    Comment,
-                    Image,
-                    Order,
-                    OrderAddress,
-                    Payment,
-                    Product,
-                    Property,
-                    User,
-                    OrderItems,
-                    CartItems,
-                ]),
-            ],
-        }).compile();
-        app = moduleRef.createNestApplication();
-        // app.useGlobalPipes(new ValidationPipe());
-        app.useGlobalPipes(
-            new ValidationPipe({
-                exceptionFactory: (errors: ValidationError[]) =>
-                    new ValidationException(errors),
-            }),
-        );
-        app.useGlobalFilters(new HttpValidationExceptionFilter());
-        await app.init();
+    beforeEach(async () => {
+        app = await setupTestModule();
     });
-
+    afterEach(async () => {
+        await app.close();
+    })
     describe('validation tests', () => {
-        it(`returns 400 and product_id.cannotBeForeignKey`, async () => {
-            const response = await request(app.getHttpServer())
-                .patch(`/carts/items/3`)
+        it(`returns 400 and product_id.cannotBeForeignKey`, (done) => {
+            /* const response = await request(app.getHttpServer())
+                 .patch(`/carts/items/3`)
+                 .send({quantity: 1, product_id: 3});
+             expect(response.status).to.equal(400);
+             expect(response.body.errorCodes).to.contain(
+                 'product_id.cannotBeForeignKey',
+             );*/
+
+            const promise = request(app.getHttpServer())
+                .patch('/carts/items/3')
                 .send({quantity: 1, product_id: 3});
-            expect(response.status).toEqual(400);
-            expect(response.body.errorCodes).toContain(
-                'product_id.cannotBeForeignKey',
-            );
+            promise.then(response => {
+                expect(response.status).to.equal(400);
+                expect(response.body.errorCodes).to.contain(
+                    'product_id.cannotBeForeignKey',
+                );
+                done();
+            }).catch(reason => done());
         });
 
         it(`returns 400 and product_id.notDefined`, async () => {
             const response = await request(app.getHttpServer())
                 .patch(`/carts/items/3`)
                 .send({quantity: 1});
-            expect(response.status).toEqual(400);
-            expect(response.body.errorCodes).toContain('product_id.notDefined');
+            expect(response.status).to.equal(400);
+            expect(response.body.errorCodes).to.contain('product_id.notDefined');
         });
 
         it(`returns 400 quantity.notDefined`, async () => {
@@ -114,12 +70,12 @@ describe('PATCH /carts/items/:id - validation tests', () => {
             const response = await request(app.getHttpServer())
                 .patch(`/carts/items/${cart.id}`)
                 .send({product_id: product.id});
-            expect(response.status).toEqual(400);
-            expect(response.body.errorCodes).toContain('quantity.notDefined');
-            expect(response.body.errorCodes).not.toContain(
+            expect(response.status).to.equal(400);
+            expect(response.body.errorCodes).to.contain('quantity.notDefined');
+            expect(response.body.errorCodes).not.to.contain(
                 'product_id.cannotBeForeignKey',
             );
-            expect(response.body.errorCodes).not.toContain('product_id.notDefined');
+            expect(response.body.errorCodes).not.to.contain('product_id.notDefined');
         });
 
         it(`returns 400 quantity.lessThanMin`, async () => {
@@ -128,9 +84,9 @@ describe('PATCH /carts/items/:id - validation tests', () => {
             const response = await request(app.getHttpServer())
                 .patch(`/carts/items/${cart.id}`)
                 .send({product_id: product.id, quantity: 0});
-            expect(response.status).toEqual(400);
-            expect(response.body.errorCodes).toHaveLength(1);
-            expect(response.body.errorCodes).toContain('quantity.lessThanMin');
+            expect(response.status).to.equal(400);
+            expect(response.body.errorCodes).to.have.length(1);
+            expect(response.body.errorCodes).to.contain('quantity.lessThanMin');
         });
     });
 });

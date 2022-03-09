@@ -1,4 +1,4 @@
-import { CanBeForeignKey } from "src/custom-validation.decorator";
+import { CanBeForeignKey } from "../../custom-validation.decorator";
 
 export class CreateOrderDto {
     @CanBeForeignKey(null)

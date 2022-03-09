@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { expect } from 'chai';
 import { OrdersController } from './orders.controller';
 
 describe('OrdersController', () => {
@@ -13,6 +14,6 @@ describe('OrdersController', () => {
   });
 
   it('should be defined', () => {
-    expect(controller).toBeDefined();
+    expect(controller).to.exist;
   });
 });

@@ -1,9 +1,8 @@
 import {INestApplication} from '@nestjs/common';
-import {ImageFactory} from 'test/factories.helper';
-import {setupTestModule} from 'test/helpers';
 import * as request from 'supertest';
-import {promises} from 'fs';
 import * as path from 'path';
+import { expect } from 'chai';
+import { setupTestModule } from '../helpers';
 
 describe(`POST /images`, () => {
     let app: INestApplication;
@@ -23,24 +22,24 @@ describe(`POST /images`, () => {
                 .attach('images[0][file]', path.join(__dirname) + '/resources/test.txt')
                 .field('images[0][path]', 'images');
 
-            expect(response.status).toEqual(400);
-            expect(response.body.errorCodes).toContain('file.wrongFileFormat');
-            expect(response.body.errorCodes).toHaveLength(1);
+            expect(response.status).to.equal(400);
+            expect(response.body.errorCodes).to.contain('file.wrongFileFormat');
+            expect(response.body.errorCodes).to.have.length(1);
         });
         it('returns 400 file.notDefined', async () => {
             const response = await request(app.getHttpServer())
                 .post('/images')
                 .field('images[0][path]', 'images');
-            expect(response.status).toEqual(400);
-            expect(response.body.errorCodes).toContain('file.notDefined');
+            expect(response.status).to.equal(400);
+            expect(response.body.errorCodes).to.contain('file.notDefined');
         });
         it('returns 400 file.notFile', async () => {
             const response = await request(app.getHttpServer())
                 .post('/images')
                 .field('file', 'some text')
                 .field('images[0][path]', 'images');
-            expect(response.status).toEqual(400);
-            expect(response.body.errorCodes).toContain('file.notDefined');
+            expect(response.status).to.equal(400);
+            expect(response.body.errorCodes).to.contain('file.notDefined');
         });
     });
 
@@ -53,7 +52,7 @@ describe(`POST /images`, () => {
                 .attach('images[1][file]', path.join(__dirname) + '/resources/test.jpg')
                 .field('images[1][path]', 'images');
 
-            expect(response.status).toEqual(201);
+            expect(response.status).to.equal(201);
         });
     });
 });

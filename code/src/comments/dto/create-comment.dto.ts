@@ -1,5 +1,5 @@
 import { IsOptional, Max, MaxLength, Min, MinLength } from "class-validator";
-import { CanBeForeignKey } from "src/custom-validation.decorator";
+import { CanBeForeignKey } from "../../custom-validation.decorator";
 
 export class CreateCommentDto {
 

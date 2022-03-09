@@ -1,12 +1,12 @@
 import {faker} from '@faker-js/faker';
-import {Cart} from 'src/carts/cart.entity';
-import {CartItems} from 'src/carts/cartItems.entity';
-import {Category} from 'src/categories/category.entity';
-import {Product} from 'src/products/product.entity';
-import {User} from 'src/users/user.entity';
 import {EntityTarget, getRepository} from 'typeorm';
 import {promises} from 'fs';
-import {Property} from "../src/properties/property.entity";
+import { Product } from '../src/products/product.entity';
+import { Category } from '../src/categories/category.entity';
+import { User } from '../src/users/user.entity';
+import { Cart } from '../src/carts/cart.entity';
+import { CartItems } from '../src/carts/cartItems.entity';
+import { Property } from '../src/properties/property.entity';
 
 abstract class Factory {
     protected Entity: EntityTarget<unknown> = null;

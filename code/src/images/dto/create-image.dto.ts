@@ -1,7 +1,6 @@
 import { Type } from "class-transformer";
 import { IsDefined, IsOptional, IsString, ValidateNested } from "class-validator";
 import { HasMimeType, IsFile, MaxFileSize } from "nestjs-form-data";
-// import { IsFile } from "src/custom-validation.decorator";
 
 class Image {
     // @IsFile({ mime: ['image/jpg', 'image/png'], max: 500 }, { context: { errorCode: 'wrongFileFormat' } })
