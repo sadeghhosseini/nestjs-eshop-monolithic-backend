@@ -1,16 +1,48 @@
-import {Body, Controller, Delete, Get, Param, Patch, Post} from '@nestjs/common';
-import {CreateProductDto} from "./dto/create-product.dto";
-import {ProductsService} from "./products.service";
+import { Body, Controller, Delete, Get, Param, Patch, Post, UploadedFiles, UseInterceptors, UsePipes, ValidationPipe } from '@nestjs/common';
+import { FileFieldsInterceptor, FilesInterceptor } from '@nestjs/platform-express';
+import { plainToClass } from 'class-transformer';
+import { validate } from 'class-validator';
+import { FormDataRequest } from 'nestjs-form-data';
+import { ValidationException } from 'test/validation.exception';
+import { CreateProductDto } from "./dto/create-product.dto";
+import { UpdateProductDto } from './dto/update-product.dto';
+import { ProductsService } from "./products.service";
 
 @Controller()
 export class ProductsController {
     constructor(private service: ProductsService) {
     }
+
     @Post('/products')
-    async create(@Body() body: CreateProductDto) {
-        await this.service.create(body);
+    @UseInterceptors(FilesInterceptor('new_images'))
+    async create(@Body() body, @UploadedFiles() images: Array<Express.Multer.File>) {
+        let cpd = null;
+        const plain = {
+            ...body,
+            new_images: images,//.map(image => image.buffer)
+        };
+        cpd = plainToClass(CreateProductDto, plain, { enableImplicitConversion: true });
+        const validationErrors = await validate(cpd);
+        console.log(validationErrors);
+        if (validationErrors.length > 0) {
+            throw new ValidationException(validationErrors);
+        }
+        await this.service.create({
+            ...cpd,
+            new_images: images,
+        });
+
+
         return;
     }
+
+
+    /*     @Post('/products')
+        @FormDataRequest()
+        async create(@Body() body) {
+            console.log(body);
+            return;
+        } */
 
     @Get('/products')
     getAll() {
@@ -23,8 +55,13 @@ export class ProductsController {
     }
 
     @Patch('/products/:id')
-    update(@Param('id') productId: string) {
-
+    async update(@Param('id') productId: number, @Body() body: UpdateProductDto) {
+        try {
+            await this.service.update(productId, body);
+        } catch (e) {
+            console.log('error', e);
+        }
+        return;
     }
 
     @Delete('/products/:id')

@@ -8,6 +8,7 @@ class Image {
     @IsFile({ context: { errorCode: 'notFile' } })
     @MaxFileSize(15 * 10 ** 3, { context: { errorCode: 'fileSizeExceeded' } })
     @HasMimeType(['image/jpeg', 'image/png'], { context: { errorCode: 'wrongFileFormat' } })
+    // @IsFile({mime: ['image/jpeg', 'image/jpg', 'image/png'], max: 20 * (10**3)})
     @IsDefined({ context: { errorCode: 'notDefined' } })
     file: any;
 

@@ -1,5 +1,8 @@
 import { IsArray, IsOptional, IsString, Min, MinLength } from "class-validator";
-import { IsFile, CanBeForeignKey, MinWordLength, Unique } from "src/custom-validation.decorator";
+import { Category } from "src/categories/category.entity";
+import { IsFile, CanBeForeignKey, MinWordLength, Unique, HasMimeType, MaxFileSize } from "src/custom-validation.decorator";
+import { Image } from "src/images/image.entity";
+import { Property } from "src/properties/property.entity";
 
 export class UpdateProductDto {
 
@@ -16,31 +19,33 @@ export class UpdateProductDto {
     quantity: number;
 
     @IsOptional()
-    price: string;
+    price: number;
 
     @IsOptional()
-    @CanBeForeignKey(null)
-    category_id: string;
+    @CanBeForeignKey(Category)
+    category_id: number;
 
     @IsOptional()
     @IsArray()
-    @IsFile({ mime: ['image/jpg', 'image/png'] }, { each: true })
+    @IsFile({ each: true })
+    @HasMimeType(['image/jpg', 'image/png'], { each: true })
+    @MaxFileSize(150 * (10 ** 3), { each: true })//150kb
     new_images: any[];//array of files
 
     @IsOptional()
     @IsArray()
-    @CanBeForeignKey(null, { each: true })
+    @CanBeForeignKey(Image, { each: true })
     image_ids: string[];
 
     @IsOptional()
     @IsArray()
-    @CanBeForeignKey(null, { each: true })
-    property_ids: string[];
+    @CanBeForeignKey(Property, { each: true })
+    property_ids: number[];
 
     @IsOptional()
     @IsArray()
     @MinLength(2, { each: true })
     @IsString({ each: true })
-    @Unique(null, { each: true })
+    @Unique({ EntityClass: Property, column: 'title' }, { each: true })
     new_properties: string[];
 }

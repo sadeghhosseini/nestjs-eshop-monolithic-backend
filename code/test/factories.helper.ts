@@ -1,12 +1,12 @@
-import {faker} from '@faker-js/faker';
-import {Cart} from 'src/carts/cart.entity';
-import {CartItems} from 'src/carts/cartItems.entity';
-import {Category} from 'src/categories/category.entity';
-import {Product} from 'src/products/product.entity';
-import {User} from 'src/users/user.entity';
-import {EntityTarget, getRepository} from 'typeorm';
-import {promises} from 'fs';
-import {Property} from "../src/properties/property.entity";
+import { faker } from '@faker-js/faker';
+import { Cart } from 'src/carts/cart.entity';
+import { CartItems } from 'src/carts/cartItems.entity';
+import { Category } from 'src/categories/category.entity';
+import { Product } from 'src/products/product.entity';
+import { User } from 'src/users/user.entity';
+import { EntityTarget, getConnection, getRepository } from 'typeorm';
+import { promises } from 'fs';
+import { Property } from "../src/properties/property.entity";
 
 abstract class Factory {
     protected Entity: EntityTarget<unknown> = null;
@@ -35,6 +35,12 @@ abstract class Factory {
             let fakeData = await this.make(data);
             try {
                 let insertResult = await (await repository.insert(fakeData));
+                /* let insertResult = await getConnection().createQueryBuilder()
+                    .insert()
+                    .into(this.Entity)
+                    .values(fakeData)
+                    .execute(); */
+
                 const pkLabel = Object.keys(insertResult.identifiers?.[0] ?? [])[0];
                 const pkValue = Object.values(insertResult.identifiers?.[0] ?? [])[0];
                 return {
@@ -50,6 +56,11 @@ abstract class Factory {
             for (let i = 0; i < fakeData.length; ++i) {
                 try {
                     let insertResult = await repository.insert(fakeData[i]);
+                    /*  let insertResult = await getConnection().createQueryBuilder()
+                         .insert()
+                         .into(this.Entity)
+                         .values(fakeData)
+                         .execute(); */
                     const pkLabel = Object.keys(insertResult.identifiers?.[0] ?? [])[0];
                     const pkValue = Object.values(insertResult.identifiers?.[0] ?? [])[0];
                     result.push({
@@ -83,10 +94,11 @@ export class ProductFactory extends Factory {
     async fake(data?: Record<string, any>) {
         return {
             title: data?.title ?? faker.commerce.product(),
-            quantity: data?.quantity ?? faker.datatype.number({min: 0, max: 10}),
-            price: data?.price ?? faker.datatype.number({min: 10000, max: 1000000}),
+            quantity: data?.quantity ?? faker.datatype.number({ min: 0, max: 10 }),
+            price: data?.price ?? faker.datatype.number({ min: 10000, max: 1000000 }),
             description: data?.description ?? faker.commerce.productDescription(),
-            category_id: data?.category_id ?? (await CategoryFactory.get().create()).id,
+            // category_id: data?.category_id ?? (await CategoryFactory.get().create()).id,
+            category: data?.category ?? (await CategoryFactory.get().create()),
         };
     }
 }
@@ -140,7 +152,7 @@ export class CartFactory extends Factory {
 
     async fake(data?: Record<string, any>) {
         return {
-            owner: data?.owner ?? (await UserFactory.get().create()).id
+            owner: data?.owner ?? (await UserFactory.get().create()),
         };
     }
 
@@ -158,7 +170,7 @@ export class CartItemsFactory extends Factory {
     async fake(data?: Record<string, any>) {
         return {
             cart_id: data?.cart_id ?? (await CartFactory.get().create()).id,
-            quantity: data?.quantity ?? faker.datatype.number({min: 0, max: 100}),
+            quantity: data?.quantity ?? faker.datatype.number({ min: 0, max: 100 }),
             product_id: data?.product_id ?? (await ProductFactory.get().create()).id,
         };
     }

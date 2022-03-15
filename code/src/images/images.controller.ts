@@ -1,7 +1,9 @@
 import { Body, Controller, Delete, Get, Param, Post, UseInterceptors } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { InjectRepository } from '@nestjs/typeorm';
-import { FormDataRequest } from 'nestjs-form-data';
+import { promises } from 'fs';
+import { FormDataRequest, MemoryStoredFile } from 'nestjs-form-data';
 import { Repository } from 'typeorm';
 import { CreateImageDto } from './dto/create-image.dto';
 import { Image } from './image.entity';
@@ -10,14 +12,22 @@ import { Image } from './image.entity';
 export class ImagesController {
     constructor(
         @InjectRepository(Image)
-        private repository: Repository<Image>
+        private repository: Repository<Image>,
+        private configService: ConfigService,
     ) {
 
     }
     @Post('/images')
     @FormDataRequest()
-    create(@Body() body: CreateImageDto) {
+    async create(@Body() body: CreateImageDto) {
+        console.log(body);
         //upload the image
+        for (const image of body.images) {
+            const file = image.file as MemoryStoredFile;
+            const timestamp = Date.now();
+            const fileName = `${image.path}_${timestamp}.${file.mimetype.split('/')[1]}`;
+            await promises.writeFile(this.configService.get<string>('UPLOAD_PATH') + '/' + fileName, file.buffer);
+        }
         //save the path into the database
         /* for (const image of body.images) {
             this.repository.save({

@@ -7,14 +7,12 @@ import * as path from 'path';
 
 describe(`POST /images`, () => {
     let app: INestApplication;
-
     beforeEach(async () => {
         app = await setupTestModule();
     });
-
-    afterEach(async() => {
+    afterEach(async () => {
         await app.close();
-    })
+    });
 
     describe(`validation test`, () => {
         it(`returns 400 file.wrongFileFormat`, async () => {

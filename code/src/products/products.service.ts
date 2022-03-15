@@ -1,17 +1,29 @@
-import {Injectable} from '@nestjs/common';
-import {InjectRepository} from "@nestjs/typeorm";
-import {Product} from "./product.entity";
-import {getConnection, Repository} from "typeorm";
-import {Property} from "../properties/property.entity";
+import { BadRequestException, Injectable } from '@nestjs/common';
+import { InjectRepository } from "@nestjs/typeorm";
+import { Product } from "./product.entity";
+import { getConnection, getManager, Repository } from "typeorm";
+import { Property } from "../properties/property.entity";
+import { UpdateProductDto } from './dto/update-product.dto';
+import { Category } from 'src/categories/category.entity';
+import { Image } from 'src/images/image.entity';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class ProductsService {
+
     constructor(
         @InjectRepository(Product)
-        private productRepository: Repository<Product>
+        private productRepository: Repository<Product>,
+        @InjectRepository(Property)
+        private propertyRepository: Repository<Property>,
+        private configService: ConfigService,
     ) {
     }
 
+    /**
+     * TODO add upload image capability
+     * @param data 
+     */
     async create(data: InputCreateType) {
         const {
             title,
@@ -21,6 +33,7 @@ export class ProductsService {
             category_id,
             new_properties: newPropertyTitles,
             property_ids: propertyIds,
+            new_images: newImages,
         } = data;
 
 
@@ -47,9 +60,21 @@ export class ProductsService {
                     ...data,
                     properties: [
                         ...data?.properties ?? [],
-                        ...propertyIds.map(id => ({id}))
+                        ...propertyIds.map(id => ({ id }))
                     ]
                 }
+            }
+
+            if (newImages?.length > 0) {
+                let imagesInfo = [];
+                for (const image of newImages) {
+                    imagesInfo = [
+                        ...imagesInfo,
+                        { path: this.configService.get<string>('UPLOAD_PATH') + image.originalname }
+                    ];
+                    
+                }
+                entityManager.save(Image, imagesInfo);
             }
 
             await entityManager.save(Product, {
@@ -64,6 +89,49 @@ export class ProductsService {
             });
         });
     }
+
+    /**
+     * TODO add upload image capability
+     * @param productId 
+     * @param body 
+     * @returns 
+     */
+    async update(productId: number, body: InputUpdateType) {
+        const product = await this.productRepository.findOne(productId, { relations: ['category', 'properties'] });
+        if (product) {
+            product.title = body?.title ?? product?.title;
+            product.description = body?.description ?? product?.description;
+            product.quantity = body?.quantity ?? product?.quantity;
+            product.price = body?.price ?? product?.price;
+            product.category.id = body?.category_id ?? product?.category?.id;
+
+            if (body.property_ids?.length > 0) {
+                product.properties = body.property_ids.map(id => {
+                    const property = new Property();
+                    property.id = id;
+                    return property;
+                });
+            }
+
+            if (body.new_properties?.length > 0) {
+                const properties = await this.propertyRepository.save(body.new_properties.map(title => {
+                    const property = new Property();
+                    property.title = title;
+                    property.isVisible = true;
+                    return property;
+                }))
+                product.properties = [
+                    ...product.properties,
+                    ...properties,
+                ]
+            }
+
+            await this.productRepository.save(product);
+            return;
+        } else {
+            throw new BadRequestException();
+        }
+    }
 }
 
 
@@ -74,5 +142,15 @@ interface InputCreateType {
     price: number;
     category_id: number;
     new_properties?: string[];
-    property_ids?: number[],
+    property_ids?: number[];
+    new_images?: Array<Express.Multer.File>;
+}
+interface InputUpdateType {
+    title?: string;
+    description?: string;
+    quantity?: number;
+    price?: number;
+    category_id?: number;
+    new_properties?: string[];
+    property_ids?: number[];
 }

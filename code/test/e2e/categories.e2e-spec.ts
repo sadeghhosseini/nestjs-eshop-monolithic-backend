@@ -7,8 +7,11 @@ import {Category} from 'src/categories/category.entity';
 
 describe(`POST /categories`, () => {
     let app: INestApplication;
-    beforeAll(async () => {
+    beforeEach(async () => {
         app = await setupTestModule();
+    });
+    afterEach(async () => {
+        await app.close();
     });
 
     describe(`success`, () => {
@@ -31,8 +34,11 @@ describe(`POST /categories`, () => {
 
 describe(`GET /categories`, () => {
     let app: INestApplication;
-    beforeAll(async () => {
+    beforeEach(async () => {
         app = await setupTestModule();
+    });
+    afterEach(async () => {
+        await app.close();
     });
 
     it('returns 200 - gets all the categories', async () => {
@@ -53,11 +59,13 @@ describe(`GET /categories`, () => {
 })
 
 describe(`GET /categories/:id`, () => {
-    let app;
-    beforeAll(async () => {
+    let app: INestApplication;
+    beforeEach(async () => {
         app = await setupTestModule();
     });
-
+    afterEach(async () => {
+        await app.close();
+    });
     it('returns 200 - gets category by id', async () => {
         const category = await CategoryFactory.get().create();
         const response = await request(app.getHttpServer())
@@ -71,8 +79,11 @@ describe(`GET /categories/:id`, () => {
 
 describe(`DELETE /categories/:id`, () => {
     let app: INestApplication;
-    beforeAll(async () => {
+    beforeEach(async () => {
         app = await setupTestModule();
+    });
+    afterEach(async () => {
+        await app.close();
     });
 
     it('returns 200 - deletes a category', async () => {
@@ -89,8 +100,11 @@ describe(`DELETE /categories/:id`, () => {
 
 describe(`PATCH /categories/:id`, () => {
     let app: INestApplication;
-    beforeAll(async () => {
+    beforeEach(async () => {
         app = await setupTestModule();
+    });
+    afterEach(async () => {
+        await app.close();
     });
 
     it('returns 200 - updates a category', async () => {
