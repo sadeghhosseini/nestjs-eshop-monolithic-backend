@@ -12,11 +12,11 @@ export class Address {
     @Column()
     city: string;
 
-    @Column()
-    restOfAddress: string;
+    @Column({ name: 'rest_of_address' })
+    rest_of_address: string;
 
-    @Column()
-    postalCode: string;
+    @Column({ name: 'postal_code' })
+    postal_code: string;
 
     @ManyToOne(() => User, user => user.addresses)
     customer: User;

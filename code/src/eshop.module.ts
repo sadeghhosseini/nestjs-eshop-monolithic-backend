@@ -38,6 +38,7 @@ import { OrderAddress } from 'src/orders/orderAddress.entity';
 import { NestjsFormDataModule } from 'nestjs-form-data';
 import { MulterModule } from '@nestjs/platform-express';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { FileFacade } from './common/file-facade.utils';
 
 @Module({
     imports: [
@@ -90,6 +91,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
         ProductsService,
         PropertiesService,
         UsersService,
+        FileFacade,
     ],
 })
 export class EShopModule { }

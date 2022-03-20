@@ -1,5 +1,5 @@
-import {ArgumentsHost, Catch, ExceptionFilter, HttpException, ValidationError} from "@nestjs/common";
-import {ValidationException} from "./validation.exception";
+import { ArgumentsHost, Catch, ExceptionFilter, ValidationError } from "@nestjs/common";
+import { ValidationException } from "test/test-exceptions/validation.exception";
 
 @Catch(ValidationException)
 export class HttpValidationExceptionFilter implements ExceptionFilter {

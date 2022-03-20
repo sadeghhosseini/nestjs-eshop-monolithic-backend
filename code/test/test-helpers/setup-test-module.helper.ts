@@ -6,7 +6,7 @@ import { Cart } from "src/carts/cart.entity";
 import { CartItems } from "src/carts/cartItems.entity";
 import { Category } from "src/categories/category.entity";
 import { Comment } from "src/comments/comment.entity";
-import { HttpValidationExceptionFilter } from "test/http-validation-exception.filter";
+import { HttpValidationExceptionFilter } from "test/test-filters/http-validation-exception.filter";
 import { Image } from "src/images/image.entity";
 import { Order } from "src/orders/order.entity";
 import { OrderAddress } from "src/orders/orderAddress.entity";
@@ -15,40 +15,41 @@ import { Payment } from "src/payments/payment.entity";
 import { Product } from "src/products/product.entity";
 import { Property } from "src/properties/property.entity";
 import { User } from "src/users/user.entity";
-import { ValidationException } from "./validation.exception";
+import { ValidationException } from "../test-exceptions/validation.exception";
 import { NestjsFormDataModule } from "nestjs-form-data";
-import { AddressesController } from "../src/addresses/addresses.controller";
-import { AddressesService } from "../src/addresses/addresses.service";
-import { AuthController } from "../src/auth/auth.controller";
-import { AuthService } from "../src/auth/auth.service";
-import { CartsController } from "../src/carts/carts.controller";
-import { CartsService } from "../src/carts/carts.service";
-import { CategoriesController } from "../src/categories/categories.controller";
-import { CategoriesService } from "../src/categories/categories.service";
-import { CommentsController } from "../src/comments/comments.controller";
-import { CommentsService } from "../src/comments/comments.service";
-import { ImagesController } from "../src/images/images.controller";
-import { ImagesService } from "../src/images/images.service";
-import { OrdersController } from "../src/orders/orders.controller";
-import { OrdersService } from "../src/orders/orders.service";
-import { PaymentsController } from "../src/payments/payments.controller";
-import { PaymentsService } from "../src/payments/payments.service";
-import { ProductsController } from "../src/products/products.controller";
-import { ProductsService } from "../src/products/products.service";
-import { PropertiesController } from "../src/properties/properties.controller";
-import { PropertiesService } from "../src/properties/properties.service";
-import { UsersController } from "../src/users/users.controller";
-import { UsersService } from "../src/users/users.service";
+import { AddressesController } from "../../src/addresses/addresses.controller";
+import { AddressesService } from "../../src/addresses/addresses.service";
+import { AuthController } from "../../src/auth/auth.controller";
+import { AuthService } from "../../src/auth/auth.service";
+import { CartsController } from "../../src/carts/carts.controller";
+import { CartsService } from "../../src/carts/carts.service";
+import { CategoriesController } from "../../src/categories/categories.controller";
+import { CategoriesService } from "../../src/categories/categories.service";
+import { CommentsController } from "../../src/comments/comments.controller";
+import { CommentsService } from "../../src/comments/comments.service";
+import { ImagesController } from "../../src/images/images.controller";
+import { ImagesService } from "../../src/images/images.service";
+import { OrdersController } from "../../src/orders/orders.controller";
+import { OrdersService } from "../../src/orders/orders.service";
+import { PaymentsController } from "../../src/payments/payments.controller";
+import { PaymentsService } from "../../src/payments/payments.service";
+import { ProductsController } from "../../src/products/products.controller";
+import { ProductsService } from "../../src/products/products.service";
+import { PropertiesController } from "../../src/properties/properties.controller";
+import { PropertiesService } from "../../src/properties/properties.service";
+import { UsersController } from "../../src/users/users.controller";
+import { UsersService } from "../../src/users/users.service";
 import { EntityClassOrSchema } from "@nestjs/typeorm/dist/interfaces/entity-class-or-schema.type";
-import { HttpInternalServerErrorException } from "./http-internal-server-error-exception.filter";
+import { HttpInternalServerErrorException } from "../test-filters/http-internal-server-error-exception.filter";
 import { MulterModule } from "@nestjs/platform-express";
 import { diskStorage, memoryStorage } from "multer";
 import { ConfigModule, ConfigService } from "@nestjs/config";
 import * as path from "path";
-import { myMemoryStorageEngine } from "./MemoryStorageEngine";
+import { myMemoryStorageEngine } from "../memory-storage-engine";
+import { FileFacade } from "src/common/file-facade.utils";
 
 
-const defaultConfig = {
+const defaultConfig: any = {
     entities: [
         Address,
         Cart,
@@ -89,10 +90,33 @@ const defaultConfig = {
         ProductsService,
         PropertiesService,
         UsersService,
+        FileFacade,
     ],
 };
-export const setupTestModule = async (config?: { entities?: EntityClassOrSchema[], controllers?: ModuleMetadata['controllers'], providers?: ModuleMetadata['providers'] }): Promise<INestApplication> => {
-    console.log('sadho', path.join(__dirname, '../', '.env.test'));
+export const setupTestModule = async (
+    config?: { entities?: EntityClassOrSchema[], controllers?: ModuleMetadata['controllers'], providers?: ModuleMetadata['providers'] },
+    spreadConfig: { entities?: EntityClassOrSchema[], controllers?: ModuleMetadata['controllers'], providers?: ModuleMetadata['providers'] } = { providers: [] },
+): Promise<INestApplication> => {
+
+    let theProviders = defaultConfig?.providers;
+    if (config?.providers?.length > 0) {
+        theProviders = config.providers;
+    }
+
+    if (spreadConfig?.providers?.length > 0) {
+        theProviders = [
+            ...theProviders.filter(provider => {
+                for (const prv of spreadConfig.providers) {
+                    if (prv === provider || prv?.['provide'] === provider) {
+                        return false;
+                    }
+                }
+                return true;
+            }),
+            ...spreadConfig.providers,
+        ]
+    }
+
     let app: INestApplication = null;
     const moduleRef = await Test.createTestingModule({
         imports: [
@@ -101,7 +125,7 @@ export const setupTestModule = async (config?: { entities?: EntityClassOrSchema[
                 imports: [ConfigModule],
                 inject: [ConfigService],
                 useFactory: (configService: ConfigService) => ({
-                    dest: configService.get<string>('UPLOAD_PATH'),
+                    // dest: configService.get<string>('UPLOAD_PATH'), 
                     storage: myMemoryStorageEngine,
                 })
             }),
@@ -122,12 +146,13 @@ export const setupTestModule = async (config?: { entities?: EntityClassOrSchema[
                 inject: [ConfigService],
             }),
             TypeOrmModule.forFeature(config?.entities ?? defaultConfig?.entities),
-            MulterModule.register({
-                storage: memoryStorage(),
-            })
+            /* MulterModule.register({
+                // storage: memoryStorage(),
+                storage: myMemoryStorageEngine,
+            }) */
         ],
         controllers: config?.controllers ?? defaultConfig?.controllers,
-        providers: config?.providers ?? defaultConfig?.providers,
+        providers: theProviders,
     }).compile();
     app = moduleRef.createNestApplication();
     app.useGlobalPipes(new ValidationPipe({
@@ -143,29 +168,3 @@ export const setupTestModule = async (config?: { entities?: EntityClassOrSchema[
 
 
 
-export const except = (obj: Record<string, any>, fields: string[] = []): Record<string, any> => {
-    return Object.keys(obj).reduce((result, currentValue, currentIndex) => {
-        if (!fields.includes(currentValue)) {
-            return {
-                ...result,
-                [currentValue]: obj[currentValue]
-            };
-        }
-        return result;
-    }, {});
-};
-
-
-export const only = (obj: Record<string, any>, fields: string[] = []): Record<string, any> => {
-    //it is intentionally implemented differently than except() function, (just for the hell of it) 
-    let result = {};
-    for (const field in obj) {
-        if (fields.includes(field)) {
-            result = {
-                ...result,
-                [field]: obj[field],
-            }
-        }
-    }
-    return result;
-};

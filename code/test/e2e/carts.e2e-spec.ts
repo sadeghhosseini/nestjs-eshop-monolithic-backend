@@ -7,7 +7,7 @@ import {
     CartFactory,
     ProductFactory,
 } from 'test/factories.helper';
-import { setupTestModule } from '../helpers';
+import { setupTestModule } from '../test-helpers/setup-test-module.helper';
 import { CartsController } from 'src/carts/carts.controller';
 import { CartsService } from 'src/carts/carts.service';
 import { User } from 'src/users/user.entity';

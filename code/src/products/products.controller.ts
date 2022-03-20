@@ -3,9 +3,11 @@ import { FileFieldsInterceptor, FilesInterceptor } from '@nestjs/platform-expres
 import { plainToClass } from 'class-transformer';
 import { validate } from 'class-validator';
 import { FormDataRequest } from 'nestjs-form-data';
-import { ValidationException } from 'test/validation.exception';
+import { ValidationException } from 'test/test-exceptions/validation.exception';
 import { CreateProductDto } from "./dto/create-product.dto";
 import { UpdateProductDto } from './dto/update-product.dto';
+import { IdToEntity } from '../common/pipes/id-to-entity.pipe';
+import { Product } from './product.entity';
 import { ProductsService } from "./products.service";
 
 @Controller()
@@ -55,18 +57,14 @@ export class ProductsController {
     }
 
     @Patch('/products/:id')
-    async update(@Param('id') productId: number, @Body() body: UpdateProductDto) {
-        try {
-            await this.service.update(productId, body);
-        } catch (e) {
-            console.log('error', e);
-        }
+    async update(@Param('id', new IdToEntity(Product, ['category', 'properties'])) product: Product, @Body() body: UpdateProductDto) {
+        await this.service.update(product, body);
         return;
     }
 
     @Delete('/products/:id')
-    delete(@Param('id') productId: string) {
-
+    async delete(@Param('id', new IdToEntity(Product)) product: Product) {
+        return await this.service.delete(product);
     }
 
     @Get('/products/:id/images')

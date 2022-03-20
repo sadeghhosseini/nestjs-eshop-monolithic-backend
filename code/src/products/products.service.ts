@@ -10,7 +10,6 @@ import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class ProductsService {
-
     constructor(
         @InjectRepository(Product)
         private productRepository: Repository<Product>,
@@ -74,10 +73,10 @@ export class ProductsService {
                     ];
                     
                 }
-                entityManager.save(Image, imagesInfo);
+                return entityManager.save(Image, imagesInfo);
             }
 
-            await entityManager.save(Product, {
+            return await entityManager.save(Product, {
                 title,
                 description,
                 quantity,
@@ -96,8 +95,8 @@ export class ProductsService {
      * @param body 
      * @returns 
      */
-    async update(productId: number, body: InputUpdateType) {
-        const product = await this.productRepository.findOne(productId, { relations: ['category', 'properties'] });
+    async update(product: Product, body: InputUpdateType) {
+        // const product = await this.productRepository.findOne(productId, { relations: ['category', 'properties'] });
         if (product) {
             product.title = body?.title ?? product?.title;
             product.description = body?.description ?? product?.description;
@@ -117,7 +116,7 @@ export class ProductsService {
                 const properties = await this.propertyRepository.save(body.new_properties.map(title => {
                     const property = new Property();
                     property.title = title;
-                    property.isVisible = true;
+                    property.is_visible = true;
                     return property;
                 }))
                 product.properties = [
@@ -126,12 +125,16 @@ export class ProductsService {
                 ]
             }
 
-            await this.productRepository.save(product);
-            return;
+            return await this.productRepository.save(product);
         } else {
             throw new BadRequestException();
         }
     }
+
+    async delete(product: Product) {
+        return await this.productRepository.delete(product.id);
+    }
+
 }
 
 

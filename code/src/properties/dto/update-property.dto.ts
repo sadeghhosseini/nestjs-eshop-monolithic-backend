@@ -1,4 +1,5 @@
 import { IsBoolean, IsOptional, IsString, MinLength } from "class-validator";
+import { Category } from "src/categories/category.entity";
 import { CanBeForeignKey } from "src/custom-validation.decorator";
 
 export class UpdatePropertyDto {
@@ -12,6 +13,6 @@ export class UpdatePropertyDto {
     is_visible: boolean;
 
     @IsOptional()
-    @CanBeForeignKey(null)
-    category_id: string;
+    @CanBeForeignKey(Category)
+    category_id: number;
 }

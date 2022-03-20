@@ -1,14 +1,16 @@
 import { INestApplication } from '@nestjs/common';
 import { CategoryFactory, ProductFactory, PropertyFactory } from 'test/factories.helper';
-import { except, only, setupTestModule } from 'test/helpers';
+import { except,  } from 'test/test-helpers/collection.helper';
+import { setupTestModule} from 'test/test-helpers/setup-test-module.helper';
 import * as request from 'supertest';
-import { getManager, getRepository, RepositoryNotFoundError } from "typeorm";
-import { Category } from "../../src/categories/category.entity";
+import { getManager } from "typeorm";
 import { Product } from "../../src/products/product.entity";
-import { Property } from 'src/properties/property.entity';
-import { assertIsSubset, assertIsEqualObject } from 'test/assertion.helper';
+import { assertIsEqualObject } from 'test/test-helpers/assertion.helper';
 import * as path from 'path';
-
+import { FakeStorage } from 'test/memory-storage-engine';
+import { promises } from 'fs';
+import { getAssociativeRecords } from 'test/test-helpers/associative-table-query.helper';
+import { Property } from 'src/properties/property.entity';
 
 describe(`POST /products`, () => {
     let app: INestApplication;
@@ -41,7 +43,7 @@ describe(`POST /products`, () => {
             { category_id: (actual, expected) => [actual.category.id, expected.category.id] }
         );
     });
-    it('returns 201 - creates a product with new properties and not images', async () => {
+    it('returns 201 - creates a product with new properties and no images', async () => {
         const product = await ProductFactory.get().make();
         const propertyTitles = (await PropertyFactory.get().count(5).make()).map(property => property.title);
         const response = await request(app.getHttpServer())
@@ -102,7 +104,7 @@ describe(`POST /products`, () => {
             { category_id: (actual, expected) => [actual.category.id, expected.category.id] }
         );
     });
-    it('returns 201 - creates a product with image', async() => {
+    it('returns 201 - creates a product with image', async () => {
         const product = await ProductFactory.get().make();
         const response = await request(app.getHttpServer())
             .post(`/products`)
@@ -113,12 +115,13 @@ describe(`POST /products`, () => {
             .field('quantity', product.quantity)
             .field('price', product.price)
             .field('category_id', product.category.id)
-            // .attach('new_images[1]', './resources/test.png');
+        // .attach('new_images[1]', './resources/test.png');
         expect(response.status).toEqual(201);
-        
+        FakeStorage.assertExists('test.jpg');
+        FakeStorage.assertExists('test.png');
+        FakeStorage.assertExists(await promises.readFile(path.join(__dirname) + '/resources/test.jpg'))
     });
 });
-
 
 describe(`PATCH /products`, () => {
     let app: INestApplication;
@@ -211,5 +214,41 @@ describe(`PATCH /products`, () => {
             ...properties.map(property => property.title),
             ...propertyTitles,
         ]);
+    });
+});
+
+describe(`DELETE /products/:id`, () => {
+    let app: INestApplication;
+    beforeEach(async () => {
+        app = await setupTestModule();
+    });
+    afterEach(async () => {
+        await app.close();
+    });
+    it("return 200 - deletes a product", async () => {
+        const product = await ProductFactory.get().create();
+        const response = await request(app.getHttpServer())
+            .delete(`/products/${product.id}`);
+        expect(response.status).toEqual(200);
+    });
+    it("return 200 - deletes a product and all it's association with properties", async () => {
+        const properties = await PropertyFactory.get().count(5).create();
+        // const product: Product = await ProductFactory.get({ properties }).create();
+        const product: Product = await ProductFactory.get().create({ properties });
+        const response = await request(app.getHttpServer())
+            .delete(`/products/${product.id}`);
+        expect(response.status).toEqual(200);
+        const foundProduct = await getManager().findOne(Product, product.id, { relations: ['properties'] });
+        expect(foundProduct).toBeUndefined();
+        const productsPropertiesRelationTableRecords = await getAssociativeRecords(Product, Property, {
+            EntityClassRelatedToForeignKey: Property,
+            foreignKey: 6,
+        });
+        expect(productsPropertiesRelationTableRecords?.length).toBe(0);
+    });
+    it('returns 400 - providing non-existing product.id', async () => {
+        const response = await request(app.getHttpServer())
+            .delete(`/products/2`);
+        expect(response.status).toBe(400);
     });
 });

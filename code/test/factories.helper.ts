@@ -4,9 +4,10 @@ import { CartItems } from 'src/carts/cartItems.entity';
 import { Category } from 'src/categories/category.entity';
 import { Product } from 'src/products/product.entity';
 import { User } from 'src/users/user.entity';
-import { EntityTarget, getConnection, getRepository } from 'typeorm';
+import { EntityTarget, getConnection, getManager, getRepository } from 'typeorm';
 import { promises } from 'fs';
 import { Property } from "../src/properties/property.entity";
+import { Address } from 'src/addresses/address.entity';
 
 abstract class Factory {
     protected Entity: EntityTarget<unknown> = null;
@@ -82,9 +83,17 @@ abstract class Factory {
     }
 }
 
+interface ProductFactoryAssociationType {
+    properties?: Property[];
+}
 export class ProductFactory extends Factory {
-    static get(): Factory {
-        return new ProductFactory();
+    private associations: ProductFactoryAssociationType;
+    constructor(associations?: ProductFactoryAssociationType) {
+        super();
+        this.associations = associations;
+    }
+    static get(associations?: ProductFactoryAssociationType): Factory {
+        return new ProductFactory(associations);
     }
 
     getEntityClass(): EntityTarget<unknown> {
@@ -92,6 +101,12 @@ export class ProductFactory extends Factory {
     }
 
     async fake(data?: Record<string, any>) {
+        let relations = {};
+        if (data?.properties) {
+            relations = {
+                properties: data?.properties,
+            }
+        }
         return {
             title: data?.title ?? faker.commerce.product(),
             quantity: data?.quantity ?? faker.datatype.number({ min: 0, max: 10 }),
@@ -99,8 +114,21 @@ export class ProductFactory extends Factory {
             description: data?.description ?? faker.commerce.productDescription(),
             // category_id: data?.category_id ?? (await CategoryFactory.get().create()).id,
             category: data?.category ?? (await CategoryFactory.get().create()),
+            ...relations,
         };
     }
+
+    /* async create(data?: Record<string, any>): Promise<any> {
+        const product: Product = await super.create(data);
+        if (this.associations?.properties) {
+            product.properties = [
+                ...(product?.properties ?? []),
+                ...this.associations.properties,
+            ];
+            await getManager().save(Product, product);
+        }
+        return product;
+    } */
 }
 
 export class CategoryFactory extends Factory {
@@ -202,12 +230,32 @@ export class PropertyFactory extends Factory {
     async fake(data?: Record<string, any>) {
         return {
             title: faker.word.noun(4),
-            isVisible: true,
+            is_visible: true,
+            category: await CategoryFactory.get().create(),
         }
     }
 
     getEntityClass(): EntityTarget<unknown> {
         return Property;
+    }
+}
+
+export class AddressFactory extends Factory {
+    static get() {
+        return new AddressFactory();
+    }
+
+    async fake(data?: Record<string, any>) {
+        return {
+            province: faker.address.state(),
+            city: faker.address.city(),
+            postal_code: faker.address.zipCodeByState('AK'),
+            rest_of_address: `street: ${faker.address.streetName()}, ${faker.address.streetAddress()}`
+        }
+    }
+
+    getEntityClass(): EntityTarget<unknown> {
+        return Address;
     }
 }
 

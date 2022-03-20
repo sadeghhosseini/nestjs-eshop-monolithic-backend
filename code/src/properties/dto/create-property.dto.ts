@@ -1,16 +1,19 @@
-import { IsBoolean, IsOptional, IsString, MinLength } from "class-validator";
+import { IsBoolean, IsDefined, IsOptional, IsString, MinLength } from "class-validator";
+import { Category } from "src/categories/category.entity";
 import { CanBeForeignKey } from "src/custom-validation.decorator";
 
 export class CreatePropertyDto {
     @IsString()
     @MinLength(3)
+    @IsDefined()
     title: string;
 
-    @IsOptional()
     @IsBoolean()
+    @IsDefined()
     is_visible: boolean;
 
 
-    @CanBeForeignKey(null)
-    category_id: string;
+    @CanBeForeignKey(Category)
+    @IsDefined()
+    category_id: number;
 }

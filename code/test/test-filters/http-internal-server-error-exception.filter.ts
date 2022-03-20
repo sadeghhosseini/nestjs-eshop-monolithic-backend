@@ -1,5 +1,5 @@
 import {ArgumentsHost, Catch, ExceptionFilter, HttpException, InternalServerErrorException, ValidationError} from "@nestjs/common";
-import {ValidationException} from "./validation.exception";
+import {ValidationException} from "../test-exceptions/validation.exception";
 
 @Catch(InternalServerErrorException)
 export class HttpInternalServerErrorException implements ExceptionFilter {

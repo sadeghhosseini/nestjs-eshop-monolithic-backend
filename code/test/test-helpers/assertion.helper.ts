@@ -23,7 +23,7 @@ export const assertIsSubset = (subset: Record<string, any>, superset: Record<str
 }
 
 
-export const assertIsEqualObject = (actual: Record<string, any>, expected: Record<string, any>, keys, mappedKeys?: Record<string, (actual, expected) => Array<any>>) => {
+export const assertIsEqualObject = <ACTUAL, EXPECTED>(actual: ACTUAL, expected: EXPECTED, keys, mappedKeys?: Record<string, (actual: ACTUAL, expected: EXPECTED) => Array<any>>) => {
     for (const key of keys) {
         expect(actual[key]).to.equal(expected[key]);
     }

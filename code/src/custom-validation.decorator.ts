@@ -156,7 +156,7 @@ export function MaxFileSize(maxFileSizeInBytes: number, validationOptions?: Vali
                     }
 
                     const input = value as any;
-                    const actualSizeOfUploadedFile = input?.size || Buffer.byteLength(input);
+                    const actualSizeOfUploadedFile = input?.size || Buffer.byteLength(input?.buffer || input);
                     return actualSizeOfUploadedFile <= maxFileSizeInBytes;
 
                     /* if ('mimetype' in value && 'buffer' in value && 'size' in value) {

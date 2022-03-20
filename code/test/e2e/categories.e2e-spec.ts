@@ -1,6 +1,6 @@
 import {INestApplication} from '@nestjs/common';
 import {CategoryFactory} from 'test/factories.helper';
-import {setupTestModule} from 'test/helpers';
+import {setupTestModule} from 'test/test-helpers/setup-test-module.helper';
 import * as request from 'supertest';
 import {getRepository} from 'typeorm';
 import {Category} from 'src/categories/category.entity';

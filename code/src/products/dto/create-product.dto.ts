@@ -45,6 +45,7 @@ export class CreateProductDto {
     @IsFile({ each: true })
     @MaxFileSize(150 * (10 ** 3), { each: true })
     @HasMimeType(['image/jpeg', 'image/png'], { each: true })
+    @IsOptional()
     new_images: any[];//array of files
 
     @IsOptional()
