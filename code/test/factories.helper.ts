@@ -4,10 +4,11 @@ import { CartItems } from 'src/carts/cartItems.entity';
 import { Category } from 'src/categories/category.entity';
 import { Product } from 'src/products/product.entity';
 import { User } from 'src/users/user.entity';
-import { EntityTarget, getConnection, getManager, getRepository } from 'typeorm';
+import { EntityTarget, getConnection, getManager, getRepository, RelationId } from 'typeorm';
 import { promises } from 'fs';
 import { Property } from "../src/properties/property.entity";
 import { Address } from 'src/addresses/address.entity';
+import { Comment } from 'src/comments/comment.entity';
 
 abstract class Factory {
     protected Entity: EntityTarget<unknown> = null;
@@ -81,6 +82,19 @@ abstract class Factory {
         this.recordCount = recordCount;
         return this;
     }
+
+
+    protected getRelations(data?: Record<string, any>, relationFields?: string[]) {
+        let relations = {};
+        if (data && relationFields) {
+            for (const field of relationFields) {
+                if (data?.[field]) {
+                    relations[field] = data[field];
+                }
+            }
+        }
+        return relations;
+    }
 }
 
 interface ProductFactoryAssociationType {
@@ -101,12 +115,7 @@ export class ProductFactory extends Factory {
     }
 
     async fake(data?: Record<string, any>) {
-        let relations = {};
-        if (data?.properties) {
-            relations = {
-                properties: data?.properties,
-            }
-        }
+        let relations = this.getRelations(data, ['properties']);
         return {
             title: data?.title ?? faker.commerce.product(),
             quantity: data?.quantity ?? faker.datatype.number({ min: 0, max: 10 }),
@@ -256,6 +265,30 @@ export class AddressFactory extends Factory {
 
     getEntityClass(): EntityTarget<unknown> {
         return Address;
+    }
+}
+
+export class CommentFactory extends Factory {
+    static get() {
+        return new CommentFactory();
+    }
+
+    async fake(data?: Record<string, any>) {
+        const relations = this.getRelations(data, [
+            'product',
+            'replies',
+            'parentComment',
+            'commenter',
+        ])
+
+        return {
+            content: faker.lorem.sentence(30),
+            ...relations,
+        }
+    }
+
+    getEntityClass(): EntityTarget<unknown> {
+        return Comment;
     }
 }
 

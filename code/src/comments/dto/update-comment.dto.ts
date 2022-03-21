@@ -1,5 +1,6 @@
 import { MaxLength, MinLength } from "class-validator";
 import { CanBeForeignKey } from "src/custom-validation.decorator";
+import { Product } from "src/products/product.entity";
 
 export class UpdateCommentDto {
 
@@ -7,7 +8,7 @@ export class UpdateCommentDto {
     @MaxLength(500)
     content: string;
 
-    @CanBeForeignKey(null)
+    @CanBeForeignKey(Product)
     product_id: string;
 
 }

@@ -13,10 +13,10 @@ export class Comment {
     @ManyToOne(() => Product)
     product: Product;
 
-    @ManyToOne(() => Comment)
+    @OneToMany(() => Comment, comment => comment.parentComment)
     replies: Comment[];
 
-    @OneToMany(() => Comment, comment => comment.replies)
+    @ManyToOne(() => Comment, comment => comment.replies, { onDelete: 'CASCADE' })
     parentComment: Comment;
 
     @ManyToOne(() => User)

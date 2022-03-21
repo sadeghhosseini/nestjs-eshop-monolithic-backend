@@ -1,5 +1,6 @@
 import { IsOptional, Max, MaxLength, Min, MinLength } from "class-validator";
 import { CanBeForeignKey } from "src/custom-validation.decorator";
+import { Comment } from "../comment.entity";
 
 export class CreateCommentDto {
 
@@ -8,6 +9,6 @@ export class CreateCommentDto {
     content: string;
     
     @IsOptional()
-    @CanBeForeignKey(null)
-    parent_id: string;
+    @CanBeForeignKey(Comment)
+    parent_id: number;
 }
