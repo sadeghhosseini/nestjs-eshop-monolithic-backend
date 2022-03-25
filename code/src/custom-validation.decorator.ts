@@ -227,6 +227,9 @@ export function Unique(options: UniqueOptionsType, validationOptions?: Validatio
                         return true;
                     }
                 },
+                defaultMessage(validationArguments: ValidationArguments) {
+                    return '$property is not unique';
+                }
             }
         });
     }

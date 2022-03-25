@@ -59,7 +59,6 @@ import * as path from 'path';
   ],
 })
 export class AppModule {
-  
   constructor(config: ConfigService) {
     console.log('config', config)
   }

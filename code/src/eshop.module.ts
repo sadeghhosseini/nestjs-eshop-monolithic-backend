@@ -39,10 +39,15 @@ import { NestjsFormDataModule } from 'nestjs-form-data';
 import { MulterModule } from '@nestjs/platform-express';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { FileFacade } from './common/file-facade.utils';
+import { IdToEntity } from './common/pipes/id-to-entity.pipe';
+import { AuthModule } from './auth/auth.module';
+import { UsersModule } from './users/users.module';
 
 @Module({
     imports: [
         NestjsFormDataModule,
+        AuthModule,
+        UsersModule,
         MulterModule.registerAsync({
             imports: [ConfigModule],
             inject: [ConfigService],
@@ -61,14 +66,12 @@ import { FileFacade } from './common/file-facade.utils';
             Payment,
             Product,
             Property,
-            User,
             OrderItems,
             CartItems,
         ])
     ],
     controllers: [
         AddressesController,
-        AuthController,
         CartsController,
         CategoriesController,
         CommentsController,
@@ -77,11 +80,9 @@ import { FileFacade } from './common/file-facade.utils';
         PaymentsController,
         ProductsController,
         PropertiesController,
-        UsersController,
     ],
     providers: [
         AddressesService,
-        AuthService,
         CartsService,
         CategoriesService,
         CommentsService,
@@ -90,7 +91,6 @@ import { FileFacade } from './common/file-facade.utils';
         PaymentsService,
         ProductsService,
         PropertiesService,
-        UsersService,
         FileFacade,
     ],
 })

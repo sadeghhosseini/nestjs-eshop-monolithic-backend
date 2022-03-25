@@ -3,10 +3,10 @@ import { FileFieldsInterceptor, FilesInterceptor } from '@nestjs/platform-expres
 import { plainToClass } from 'class-transformer';
 import { validate } from 'class-validator';
 import { FormDataRequest } from 'nestjs-form-data';
+import { IdToEntity } from 'src/common/pipes/id-to-entity.pipe';
 import { ValidationException } from 'test/test-exceptions/validation.exception';
 import { CreateProductDto } from "./dto/create-product.dto";
 import { UpdateProductDto } from './dto/update-product.dto';
-import { IdToEntity } from '../common/pipes/id-to-entity.pipe';
 import { Product } from './product.entity';
 import { ProductsService } from "./products.service";
 

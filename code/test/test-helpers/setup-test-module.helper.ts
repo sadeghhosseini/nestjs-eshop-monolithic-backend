@@ -61,7 +61,6 @@ const defaultConfig: any = {
         Payment,
         Product,
         Property,
-        User,
         OrderItems,
         CartItems,
     ],
@@ -76,7 +75,6 @@ const defaultConfig: any = {
         PaymentsController,
         ProductsController,
         PropertiesController,
-        UsersController,
     ],
     providers: [
         AddressesService,
@@ -89,7 +87,6 @@ const defaultConfig: any = {
         PaymentsService,
         ProductsService,
         PropertiesService,
-        UsersService,
         FileFacade,
     ],
 };
