@@ -25,3 +25,4 @@ services:
       - '3306:3306'
     volumes:
       - ./db-files:/var/lib/mysql
+      - /usr/src/app/node_modules

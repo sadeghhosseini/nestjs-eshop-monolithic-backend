@@ -1,14 +1,14 @@
 import { faker } from '@faker-js/faker';
-import { Cart } from 'src/carts/cart.entity';
-import { CartItems } from 'src/carts/cartItems.entity';
-import { Category } from 'src/categories/category.entity';
-import { Product } from 'src/products/product.entity';
+import { Cart } from 'src/eshop/carts/cart.entity';
+import { CartItems } from 'src/eshop/carts/cartItems.entity';
+import { Category } from 'src/eshop/categories/category.entity';
+import { Product } from 'src/eshop/products/product.entity';
 import { User } from 'src/users/user.entity';
 import { EntityTarget, getConnection, getManager, getRepository, RelationId } from 'typeorm';
 import { promises } from 'fs';
-import { Property } from "../src/properties/property.entity";
-import { Address } from 'src/addresses/address.entity';
-import { Comment } from 'src/comments/comment.entity';
+import { Property } from "../src/eshop/properties/property.entity";
+import { Address } from 'src/eshop/addresses/address.entity';
+import { Comment } from 'src/eshop/comments/comment.entity';
 
 abstract class Factory {
     protected Entity: EntityTarget<unknown> = null;
@@ -36,15 +36,13 @@ abstract class Factory {
         if (this.recordCount == 1) {
             let fakeData = await this.make(data);
             try {
-                let insertResult = await (await repository.insert(fakeData));
-                /* let insertResult = await getConnection().createQueryBuilder()
-                    .insert()
-                    .into(this.Entity)
-                    .values(fakeData)
-                    .execute(); */
-
+                /*let insertResult = await (await repository.insert(fakeData));
                 const pkLabel = Object.keys(insertResult.identifiers?.[0] ?? [])[0];
-                const pkValue = Object.values(insertResult.identifiers?.[0] ?? [])[0];
+                const pkValue = Object.values(insertResult.identifiers?.[0] ?? [])[0];*/
+
+                let record = await (await repository.save(fakeData));
+                const pkLabel = 'id';
+                const pkValue = record['id'];
                 return {
                     ...fakeData,
                     [pkLabel]: pkValue,
@@ -57,14 +55,18 @@ abstract class Factory {
             let fakeData = await this.make(data);
             for (let i = 0; i < fakeData.length; ++i) {
                 try {
-                    let insertResult = await repository.insert(fakeData[i]);
-                    /*  let insertResult = await getConnection().createQueryBuilder()
+/*                    let insertResult = await repository.insert(fakeData[i]);
+                    /!*  let insertResult = await getConnection().createQueryBuilder()
                          .insert()
                          .into(this.Entity)
                          .values(fakeData)
-                         .execute(); */
+                         .execute(); *!/
                     const pkLabel = Object.keys(insertResult.identifiers?.[0] ?? [])[0];
-                    const pkValue = Object.values(insertResult.identifiers?.[0] ?? [])[0];
+                    const pkValue = Object.values(insertResult.identifiers?.[0] ?? [])[0];*/
+
+                    let record = await repository.save(fakeData[i]);
+                    const pkLabel = 'id';
+                    const pkValue = record['id'];
                     result.push({
                         ...fakeData[i],
                         [pkLabel]: pkValue,
@@ -72,6 +74,7 @@ abstract class Factory {
                     // return result;
                 } catch (e) {
                     console.log('Factory - create - error - 2', e);
+                    throw e;
                 }
             }
             return result;
@@ -115,7 +118,7 @@ export class ProductFactory extends Factory {
     }
 
     async fake(data?: Record<string, any>) {
-        let relations = this.getRelations(data, ['properties']);
+        let relations = this.getRelations(data, ['properties', 'comments']);
         return {
             title: data?.title ?? faker.commerce.product(),
             quantity: data?.quantity ?? faker.datatype.number({ min: 0, max: 10 }),
@@ -169,10 +172,12 @@ export class UserFactory extends Factory {
     }
 
     fake(data?: Record<string, any>) {
+        let relations = this.getRelations(data, ['permissions', 'addresses', 'orders', 'cart']);
         return {
             name: faker.name.findName(),
             email: faker.internet.email(),
             password: faker.internet.password(),
+            ...relations,
         };
     }
 
@@ -259,7 +264,10 @@ export class AddressFactory extends Factory {
             province: faker.address.state(),
             city: faker.address.city(),
             postal_code: faker.address.zipCodeByState('AK'),
-            rest_of_address: `street: ${faker.address.streetName()}, ${faker.address.streetAddress()}`
+            rest_of_address: `street: ${faker.address.streetName()}, ${faker.address.streetAddress()}`,
+            customer: {
+                id: data?.customer?.id || (await UserFactory.get().create())?.id,
+            }
         }
     }
 

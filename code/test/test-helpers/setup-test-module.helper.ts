@@ -1,42 +1,42 @@
 import { INestApplication, ModuleMetadata, ValidationError, ValidationPipe } from "@nestjs/common";
 import { Test } from "@nestjs/testing";
 import { TypeOrmModule } from "@nestjs/typeorm";
-import { Address } from "src/addresses/address.entity";
-import { Cart } from "src/carts/cart.entity";
-import { CartItems } from "src/carts/cartItems.entity";
-import { Category } from "src/categories/category.entity";
-import { Comment } from "src/comments/comment.entity";
+import { Address } from "src/eshop/addresses/address.entity";
+import { Cart } from "src/eshop/carts/cart.entity";
+import { CartItems } from "src/eshop/carts/cartItems.entity";
+import { Category } from "src/eshop/categories/category.entity";
+import { Comment } from "src/eshop/comments/comment.entity";
 import { HttpValidationExceptionFilter } from "test/test-filters/http-validation-exception.filter";
-import { Image } from "src/images/image.entity";
-import { Order } from "src/orders/order.entity";
-import { OrderAddress } from "src/orders/orderAddress.entity";
-import { OrderItems } from "src/orders/orderItems.entity";
-import { Payment } from "src/payments/payment.entity";
-import { Product } from "src/products/product.entity";
-import { Property } from "src/properties/property.entity";
+import { Image } from "src/eshop/images/image.entity";
+import { Order } from "src/eshop/orders/order.entity";
+import { OrderAddress } from "src/eshop/orders/orderAddress.entity";
+import { OrderItems } from "src/eshop/orders/orderItems.entity";
+import { Payment } from "src/eshop/payments/payment.entity";
+import { Product } from "src/eshop/products/product.entity";
+import { Property } from "src/eshop/properties/property.entity";
 import { User } from "src/users/user.entity";
 import { ValidationException } from "../test-exceptions/validation.exception";
 import { NestjsFormDataModule } from "nestjs-form-data";
-import { AddressesController } from "../../src/addresses/addresses.controller";
-import { AddressesService } from "../../src/addresses/addresses.service";
+import { AddressesController } from "../../src/eshop/addresses/addresses.controller";
+import { AddressesService } from "../../src/eshop/addresses/addresses.service";
 import { AuthController } from "../../src/auth/auth.controller";
 import { AuthService } from "../../src/auth/auth.service";
-import { CartsController } from "../../src/carts/carts.controller";
-import { CartsService } from "../../src/carts/carts.service";
-import { CategoriesController } from "../../src/categories/categories.controller";
-import { CategoriesService } from "../../src/categories/categories.service";
-import { CommentsController } from "../../src/comments/comments.controller";
-import { CommentsService } from "../../src/comments/comments.service";
-import { ImagesController } from "../../src/images/images.controller";
-import { ImagesService } from "../../src/images/images.service";
-import { OrdersController } from "../../src/orders/orders.controller";
-import { OrdersService } from "../../src/orders/orders.service";
-import { PaymentsController } from "../../src/payments/payments.controller";
-import { PaymentsService } from "../../src/payments/payments.service";
-import { ProductsController } from "../../src/products/products.controller";
-import { ProductsService } from "../../src/products/products.service";
-import { PropertiesController } from "../../src/properties/properties.controller";
-import { PropertiesService } from "../../src/properties/properties.service";
+import { CartsController } from "../../src/eshop/carts/carts.controller";
+import { CartsService } from "../../src/eshop/carts/carts.service";
+import { CategoriesController } from "../../src/eshop/categories/categories.controller";
+import { CategoriesService } from "../../src/eshop/categories/categories.service";
+import { CommentsController } from "../../src/eshop/comments/comments.controller";
+import { CommentsService } from "../../src/eshop/comments/comments.service";
+import { ImagesController } from "../../src/eshop/images/images.controller";
+import { ImagesService } from "../../src/eshop/images/images.service";
+import { OrdersController } from "../../src/eshop/orders/orders.controller";
+import { OrdersService } from "../../src/eshop/orders/orders.service";
+import { PaymentsController } from "../../src/eshop/payments/payments.controller";
+import { PaymentsService } from "../../src/eshop/payments/payments.service";
+import { ProductsController } from "../../src/eshop/products/products.controller";
+import { ProductsService } from "../../src/eshop/products/products.service";
+import { PropertiesController } from "../../src/eshop/properties/properties.controller";
+import { PropertiesService } from "../../src/eshop/properties/properties.service";
 import { UsersController } from "../../src/users/users.controller";
 import { UsersService } from "../../src/users/users.service";
 import { EntityClassOrSchema } from "@nestjs/typeorm/dist/interfaces/entity-class-or-schema.type";
@@ -47,6 +47,14 @@ import { ConfigModule, ConfigService } from "@nestjs/config";
 import * as path from "path";
 import { myMemoryStorageEngine } from "../memory-storage-engine";
 import { FileFacade } from "src/common/file-facade.utils";
+import { PassportModule } from "@nestjs/passport";
+import { JwtModule } from "@nestjs/jwt";
+import { Permission } from "src/users/permission.entity";
+import { UserRepository } from "src/users/users.repository";
+import { APP_GUARD } from "@nestjs/core";
+import { PermissionsGuard } from "src/users/permissions.guard";
+import { JwtStrategy } from "src/auth/jwt.strategy";
+import {permissionSeeder} from "../../src/users/permission.seed";
 
 
 const defaultConfig: any = {
@@ -63,6 +71,11 @@ const defaultConfig: any = {
         Property,
         OrderItems,
         CartItems,
+        User,
+        Permission,
+    ],
+    customRepository: [
+        UserRepository,
     ],
     controllers: [
         AddressesController,
@@ -75,6 +88,7 @@ const defaultConfig: any = {
         PaymentsController,
         ProductsController,
         PropertiesController,
+        UsersController,
     ],
     providers: [
         AddressesService,
@@ -87,7 +101,13 @@ const defaultConfig: any = {
         PaymentsService,
         ProductsService,
         PropertiesService,
+        UsersService,
         FileFacade,
+        JwtStrategy,
+        /*{
+            provide: APP_GUARD,
+            useClass: PermissionsGuard,
+        },*/
     ],
 };
 export const setupTestModule = async (
@@ -115,8 +135,18 @@ export const setupTestModule = async (
     }
 
     let app: INestApplication = null;
+    const forFeatures = [...(config?.entities ?? defaultConfig?.entities), ...defaultConfig?.customRepository];
     const moduleRef = await Test.createTestingModule({
         imports: [
+            PassportModule,
+            JwtModule.registerAsync({
+                imports: [ConfigModule.forRoot()],
+                inject: [ConfigService],
+                useFactory: (configService: ConfigService) => ({
+                    secret: configService.get('JWT_SECRET'),
+                    signOptions: { expiresIn: '1d' }
+                })
+            }),
             NestjsFormDataModule,
             MulterModule.registerAsync({
                 imports: [ConfigModule],
@@ -142,7 +172,7 @@ export const setupTestModule = async (
                 }),
                 inject: [ConfigService],
             }),
-            TypeOrmModule.forFeature(config?.entities ?? defaultConfig?.entities),
+            TypeOrmModule.forFeature(forFeatures),
             /* MulterModule.register({
                 // storage: memoryStorage(),
                 storage: myMemoryStorageEngine,
@@ -158,7 +188,6 @@ export const setupTestModule = async (
     app.useGlobalFilters(new HttpValidationExceptionFilter());
     app.useGlobalFilters(new HttpInternalServerErrorException());
     await app.init();
-
     return app;
 }
 

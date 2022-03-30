@@ -1,21 +1,22 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Cart } from 'src/carts/cart.entity';
-import { Category } from 'src/categories/category.entity';
-import { Order } from 'src/orders/order.entity';
-import { Payment } from 'src/payments/payment.entity';
-import { Product } from 'src/products/product.entity';
-import { Property } from 'src/properties/property.entity';
+import { Cart } from 'src/eshop/carts/cart.entity';
+import { Category } from 'src/eshop/categories/category.entity';
+import { Order } from 'src/eshop/orders/order.entity';
+import { Payment } from 'src/eshop/payments/payment.entity';
+import { Product } from 'src/eshop/products/product.entity';
+import { Property } from 'src/eshop/properties/property.entity';
 import { User } from 'src/users/user.entity';
-import { OrderItems } from 'src/orders/orderItems.entity';
-import { CartItems } from 'src/carts/cartItems.entity';
-import { Comment } from 'src/comments/comment.entity';
-import { Image } from 'src/images/image.entity';
-import { OrderAddress } from 'src/orders/orderAddress.entity';
-import { EShopModule } from 'src/eshop.module';
+import { OrderItems } from 'src/eshop/orders/orderItems.entity';
+import { CartItems } from 'src/eshop/carts/cartItems.entity';
+import { Comment } from 'src/eshop/comments/comment.entity';
+import { Image } from 'src/eshop/images/image.entity';
+import { OrderAddress } from 'src/eshop/orders/orderAddress.entity';
+import { EShopModule } from 'src/eshop/eshop.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { Address } from 'src/addresses/address.entity';
+import { Address } from 'src/eshop/addresses/address.entity';
 import * as path from 'path';
+import { Permission } from './users/permission.entity';
 
 @Module({
   imports: [
@@ -48,6 +49,7 @@ import * as path from 'path';
           User,
           OrderItems,
           CartItems,
+          Permission,
         ],
         synchronize: true,//remove in production (applies changes to entity classes -migrations files- to database on each application start)
       }),
@@ -59,7 +61,5 @@ import * as path from 'path';
   ],
 })
 export class AppModule {
-  constructor(config: ConfigService) {
-    console.log('config', config)
-  }
+  
 }

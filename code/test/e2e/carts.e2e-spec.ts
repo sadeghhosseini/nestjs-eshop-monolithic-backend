@@ -1,19 +1,19 @@
 import {
     INestApplication,
 } from '@nestjs/common';
-import {Cart} from 'src/carts/cart.entity';
+import {Cart} from 'src/eshop/carts/cart.entity';
 import * as request from 'supertest';
 import {
     CartFactory,
     ProductFactory,
 } from 'test/factories.helper';
 import { setupTestModule } from '../test-helpers/setup-test-module.helper';
-import { CartsController } from 'src/carts/carts.controller';
-import { CartsService } from 'src/carts/carts.service';
+import { CartsController } from 'src/eshop/carts/carts.controller';
+import { CartsService } from 'src/eshop/carts/carts.service';
 import { User } from 'src/users/user.entity';
-import { CartItems } from 'src/carts/cartItems.entity';
-import { Order } from 'src/orders/order.entity';
-import { Address } from 'src/addresses/address.entity';
+import { CartItems } from 'src/eshop/carts/cartItems.entity';
+import { Order } from 'src/eshop/orders/order.entity';
+import { Address } from 'src/eshop/addresses/address.entity';
 
 describe('PATCH /carts/items/:id - validation tests', () => {
     let app: INestApplication;

@@ -1,4 +1,7 @@
-import { Controller, Get, Param, Patch } from '@nestjs/common';
+import { Controller, Get, Param, Patch, UseGuards } from '@nestjs/common';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+import { RequirePermissions } from './permissions.decorator';
+import { PermissionsGuard } from './permissions.guard';
 
 @Controller()
 export class UsersController {
@@ -13,6 +16,8 @@ export class UsersController {
         
     }
     
+    @UseGuards(JwtAuthGuard, PermissionsGuard)
+    @RequirePermissions('edit-user(name)-own')
     @Patch('/users/:id')
     update(@Param('id') userId: string) {
 

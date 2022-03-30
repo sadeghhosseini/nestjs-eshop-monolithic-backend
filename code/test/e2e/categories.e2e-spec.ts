@@ -1,9 +1,9 @@
 import {INestApplication} from '@nestjs/common';
 import {CategoryFactory} from 'test/factories.helper';
 import {setupTestModule} from 'test/test-helpers/setup-test-module.helper';
-import * as request from 'supertest';
 import {getRepository} from 'typeorm';
-import {Category} from 'src/categories/category.entity';
+import {Category} from 'src/eshop/categories/category.entity';
+import {request} from "../test-helpers/request.helper";
 
 describe(`POST /categories`, () => {
     let app: INestApplication;
@@ -17,9 +17,11 @@ describe(`POST /categories`, () => {
     describe(`success`, () => {
         it('returns 201 - creates a new category', async () => {
             const category = await CategoryFactory.get().make();
-            const response = await request(app.getHttpServer())
+            /*const response = await request(app.getHttpServer())
                 .post('/categories')
-                .send(category);
+                .send(category);*/
+            const response = await request.authenticate(app, {permissions: ['add-category']})
+                .post(app, '/categories', category);
             expect(response.status).toEqual(201);
             const categoryRepository = getRepository(Category);
             const allCategories = await categoryRepository.find();
@@ -31,7 +33,6 @@ describe(`POST /categories`, () => {
         });
     });
 });
-
 describe(`GET /categories`, () => {
     let app: INestApplication;
     beforeEach(async () => {
@@ -43,9 +44,10 @@ describe(`GET /categories`, () => {
 
     it('returns 200 - gets all the categories', async () => {
         const categories = await CategoryFactory.get().count(15).create();
-        const response = await request(app.getHttpServer())
+        /*const response = await request(app.getHttpServer())
             .get('/categories')
-            .send();
+            .send();*/
+        const response = await request.authenticate(app).get(app, '/categories');
         expect(response.status).toEqual(200);
 
         const returnedCategories = response.body;
@@ -57,7 +59,6 @@ describe(`GET /categories`, () => {
         });
     });
 })
-
 describe(`GET /categories/:id`, () => {
     let app: INestApplication;
     beforeEach(async () => {
@@ -68,15 +69,15 @@ describe(`GET /categories/:id`, () => {
     });
     it('returns 200 - gets category by id', async () => {
         const category = await CategoryFactory.get().create();
-        const response = await request(app.getHttpServer())
+        /*const response = await request(app.getHttpServer())
             .get(`/categories/${category.id}`)
-            .send();
+            .send();*/
+        const response = await request.authenticate(app).get(app, `/categories/${category.id}`);
         expect(response.status).toEqual(200);
         const returnedCategory = response.body;
         expect(category).toMatchObject(returnedCategory);
     });
 });
-
 describe(`DELETE /categories/:id`, () => {
     let app: INestApplication;
     beforeEach(async () => {
@@ -88,16 +89,17 @@ describe(`DELETE /categories/:id`, () => {
 
     it('returns 200 - deletes a category', async () => {
         const category = await CategoryFactory.get().create();
-        const response = await request(app.getHttpServer())
+        /*const response = await request(app.getHttpServer())
             .delete(`/categories/${category.id}`)
-            .send();
+            .send();*/
+        const response = await request.authenticate(app, {permissions: ['delete-category-any']})
+            .delete(app, `/categories/${category.id}`);
         expect(response.status).toEqual(200);
         const repository = getRepository(Category);
         const foundCategory = await repository.find(category.id);
         expect(foundCategory).toHaveLength(0);
     });
 });
-
 describe(`PATCH /categories/:id`, () => {
     let app: INestApplication;
     beforeEach(async () => {
@@ -139,9 +141,11 @@ async function patchTest(
     getPk: (record: any) => string
 ) {
     const record = await FactoryClass.get().create();
-    const response = await request(app.getHttpServer())
+    /*const response = await request(app.getHttpServer())
         .patch(getUrl(record))
-        .send(dataForUpdate);
+        .send(dataForUpdate);*/
+    const response = await request.authenticate(app, {permissions: ['edit-category-any']})
+        .patch(app, getUrl(record), dataForUpdate);
     expect(response.status).toEqual(expectedStatus);
     const repository = getRepository(EntityClass);
     const foundRecord = await repository.findOne(getPk(record));

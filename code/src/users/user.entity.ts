@@ -1,7 +1,8 @@
-import { Address } from "src/addresses/address.entity";
-import { Cart } from "src/carts/cart.entity";
-import { Order } from "src/orders/order.entity";
-import { Column, Entity, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Address } from "src/eshop/addresses/address.entity";
+import { Cart } from "src/eshop/carts/cart.entity";
+import { Order } from "src/eshop/orders/order.entity";
+import { Column, Entity, JoinTable, ManyToMany, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Permission } from "./permission.entity";
 
 @Entity({ name: 'users' })
 export class User {
@@ -25,4 +26,8 @@ export class User {
 
     @OneToOne(() => Cart)
     cart: Cart;
+
+    @ManyToMany(() => Permission, permission => permission.users)
+    @JoinTable({ name: 'users_permissions', joinColumn: { name: 'user_id' }, inverseJoinColumn: { name: 'permission_id' } })
+    permissions: Permission[];
 }

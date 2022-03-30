@@ -1,4 +1,4 @@
-import { expect } from "chai";
+import {expect} from "chai";
 
 let isArray = function (a) {
     return (!!a) && (a.constructor === Array);
@@ -38,3 +38,12 @@ export const assertIsEqualObject = <ACTUAL, EXPECTED>(actual: ACTUAL, expected: 
     });
 }
 
+export const assertIsEqualArrayOfObjects = <ACTUAL, EXPECTED>(actualItems: Array<ACTUAL>, expectedItems: Array<EXPECTED>, primaryKey: string = 'id', keys: string[], mappedKeys?: Record<string, (actual: ACTUAL, expected: EXPECTED) => Array<any>>) => {
+    for (const ai of actualItems) {
+        const correspondingExpectedItem = expectedItems.filter(ei => ei[primaryKey] == ai[primaryKey]).pop();
+        expect(correspondingExpectedItem, `expectedItem with ${primaryKey}=${ai[primaryKey]} does not exist`).not.undefined;
+        if (correspondingExpectedItem) {
+            assertIsEqualObject(ai, correspondingExpectedItem, keys, mappedKeys)
+        }
+    }
+}

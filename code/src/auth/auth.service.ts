@@ -44,8 +44,6 @@ export class AuthService {
             password: hashedPassowrd,
         });
         const payload = { email: user.email, userId: user.id };
-        console.log(payload);
-        console.log(user);
         return {
             access_token: this.jwtService.sign(payload),
         }
