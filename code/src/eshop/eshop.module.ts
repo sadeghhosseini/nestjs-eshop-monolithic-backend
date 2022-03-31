@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
-import { AddressesController } from 'src/eshop/addresses/addresses.controller';
+import { AddressesController } from 'src/eshop/addresses/adapters/addresses.controller';
 import { AuthController } from 'src/auth/auth.controller';
 import { CartsController } from 'src/eshop/carts/carts.controller';
-import { CategoriesController } from 'src/eshop/categories/categories.controller';
-import { CommentsController } from 'src/eshop/comments/comments.controller';
+import { CategoriesController } from 'src/eshop/categories/adapters/categories.controller';
+import { CommentsController } from 'src/eshop/comments/adapters/comments.controller';
 import { ImagesController } from 'src/eshop/images/images.controller';
 import { OrdersController } from 'src/eshop/orders/orders.controller';
 import { PaymentsController } from 'src/eshop/payments/payments.controller';
@@ -44,6 +44,15 @@ import { AuthModule } from '../auth/auth.module';
 import { UsersModule } from '../users/users.module';
 import { Permission } from 'src/users/permission.entity';
 import { UserRepository } from 'src/users/users.repository';
+import { AddressRepository } from './addresses/adapters/address.repository';
+import { AddressProvider } from './addresses/ports/address.provider';
+import { AddressUseCase } from './addresses/ports/address.usecase';
+import { CategoryProvider } from './categories/ports/category.provider';
+import { CategoryUseCase } from './categories/ports/category.usecase';
+import { CategoryRepository } from './categories/adapters/category.repository';
+import { CommentProvider } from './comments/ports/comment.provider';
+import { CommentUseCase } from './comments/ports/comment.usecase';
+import { CommentRepository } from './comments/adapters/comment.repository';
 
 @Module({
     imports: [
@@ -86,16 +95,37 @@ import { UserRepository } from 'src/users/users.repository';
         PropertiesController,
     ],
     providers: [
-        AddressesService,
         CartsService,
-        CategoriesService,
-        CommentsService,
         ImagesService,
         OrdersService,
         PaymentsService,
         ProductsService,
         PropertiesService,
         FileFacade,
+        {
+            provide: AddressProvider,
+            useClass: AddressRepository,
+        },
+        {
+            provide: AddressUseCase,
+            useClass: AddressesService,
+        },
+        {
+            provide: CategoryProvider,
+            useClass: CategoryRepository,
+        },
+        {
+            provide: CategoryUseCase,
+            useClass: CategoriesService,
+        },
+        {
+            provide: CommentProvider,
+            useClass: CommentRepository,
+        },
+        {
+            provide: CommentUseCase,
+            useClass: CommentsService,
+        },
     ],
 })
 export class EShopModule { }

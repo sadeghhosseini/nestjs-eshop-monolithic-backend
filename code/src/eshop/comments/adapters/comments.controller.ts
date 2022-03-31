@@ -5,10 +5,10 @@ import { Product } from 'src/eshop/products/product.entity';
 import { ProductsService } from 'src/eshop/products/products.service';
 import { RequirePermissions } from 'src/users/permissions.decorator';
 import { PermissionsGuard } from 'src/users/permissions.guard';
-import { Comment } from './comment.entity';
-import { CommentsService } from './comments.service';
-import { CreateCommentDto } from './dto/create-comment.dto';
-import { UpdateCommentDto } from './dto/update-comment.dto';
+import { Comment } from '../comment.entity';
+import { CommentsService } from '../comments.service';
+import { CreateCommentDto } from '../dto/create-comment.dto';
+import { UpdateCommentDto } from '../dto/update-comment.dto';
 
 @Controller()
 export class CommentsController {

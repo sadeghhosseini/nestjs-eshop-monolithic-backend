@@ -1,20 +1,22 @@
-import {ForbiddenException, Injectable} from '@nestjs/common';
-import {InjectRepository} from '@nestjs/typeorm';
-import {Product} from 'src/eshop/products/product.entity';
-import {Repository} from 'typeorm';
-import {Comment} from './comment.entity';
-import {CreateCommentDto} from './dto/create-comment.dto';
-import {User} from "../../users/user.entity";
+import { ForbiddenException, Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Product } from 'src/eshop/products/product.entity';
+import { Repository } from 'typeorm';
+import { Comment } from './comment.entity';
+import { CreateCommentDto } from './dto/create-comment.dto';
+import { User } from "../../users/user.entity";
+import { CommentUseCase, CommentUseCaseType } from './ports/comment.usecase';
+import { CommentProvider } from './ports/comment.provider';
 
 @Injectable()
-export class CommentsService {
+export class CommentsService implements CommentUseCase {
     constructor(
-        @InjectRepository(Comment)
-        private repository: Repository<Comment>
+        private commentProvider: CommentProvider,
     ) {
+
     }
 
-    create(product: Product, body: CreateCommentDto) {
+    create(product: Product, body: CommentUseCaseType.createComment) {
         if (body?.parent_id) {//comment is a reply
             const comment = {
                 content: body?.content,
@@ -22,7 +24,7 @@ export class CommentsService {
                     id: body?.parent_id,
                 }
             }
-            return this.repository.save(comment);
+            return this.commentProvider.createRecord(comment);
         } else {
             const comment = {
                 content: body?.content,
@@ -30,16 +32,12 @@ export class CommentsService {
                     id: product.id,
                 }
             }
-            return this.repository.save(comment);
+            return this.commentProvider.createRecord(comment);
         }
     }
 
     getAll(product: Product) {
-        return this.repository.find({
-            product: {
-                id: product.id,
-            }
-        });
+        return this.commentProvider.getRecords(product.id);
     }
 
     delete(user: User, comment: Comment) {
@@ -51,13 +49,13 @@ export class CommentsService {
         if (!permitted) {
             throw new ForbiddenException();
         }
-        return this.repository.delete(comment);
+        return this.commentProvider.deleteRecord(comment);
     }
 
-    update(user: User, comment: Comment, data: { content: string }) {
+    update(user: User, comment: Comment, data: CommentUseCaseType.updateComment) {
         const isOwnComment = comment?.commenter?.id == user.id;
         if (isOwnComment) {
-            return this.repository.update(comment, {content: data.content});
+            return this.commentProvider.updateRecord(comment, { content: data.content });
         }
         throw new ForbiddenException();
     }

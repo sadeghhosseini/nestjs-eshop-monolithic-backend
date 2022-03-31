@@ -17,15 +17,15 @@ import { Property } from "src/eshop/properties/property.entity";
 import { User } from "src/users/user.entity";
 import { ValidationException } from "../test-exceptions/validation.exception";
 import { NestjsFormDataModule } from "nestjs-form-data";
-import { AddressesController } from "../../src/eshop/addresses/addresses.controller";
+import { AddressesController } from "../../src/eshop/addresses/adapters/addresses.controller";
 import { AddressesService } from "../../src/eshop/addresses/addresses.service";
 import { AuthController } from "../../src/auth/auth.controller";
 import { AuthService } from "../../src/auth/auth.service";
 import { CartsController } from "../../src/eshop/carts/carts.controller";
 import { CartsService } from "../../src/eshop/carts/carts.service";
-import { CategoriesController } from "../../src/eshop/categories/categories.controller";
+import { CategoriesController } from "../../src/eshop/categories/adapters/categories.controller";
 import { CategoriesService } from "../../src/eshop/categories/categories.service";
-import { CommentsController } from "../../src/eshop/comments/comments.controller";
+import { CommentsController } from "../../src/eshop/comments/adapters/comments.controller";
 import { CommentsService } from "../../src/eshop/comments/comments.service";
 import { ImagesController } from "../../src/eshop/images/images.controller";
 import { ImagesService } from "../../src/eshop/images/images.service";
@@ -54,8 +54,16 @@ import { UserRepository } from "src/users/users.repository";
 import { APP_GUARD } from "@nestjs/core";
 import { PermissionsGuard } from "src/users/permissions.guard";
 import { JwtStrategy } from "src/auth/jwt.strategy";
-import {permissionSeeder} from "../../src/users/permission.seed";
-
+import { permissionSeeder } from "../../src/users/permission.seed";
+import { AddressRepository } from "src/eshop/addresses/adapters/address.repository";
+import { AddressUseCase } from "src/eshop/addresses/ports/address.usecase";
+import { AddressProvider } from "src/eshop/addresses/ports/address.provider";
+import { CategoryProvider } from "src/eshop/categories/ports/category.provider";
+import { CategoryRepository } from "src/eshop/categories/adapters/category.repository";
+import { CategoryUseCase } from "src/eshop/categories/ports/category.usecase";
+import { CommentProvider } from "src/eshop/comments/ports/comment.provider";
+import { CommentRepository } from "src/eshop/comments/adapters/comment.repository";
+import { CommentUseCase } from "src/eshop/comments/ports/comment.usecase";
 
 const defaultConfig: any = {
     entities: [
@@ -91,10 +99,8 @@ const defaultConfig: any = {
         UsersController,
     ],
     providers: [
-        AddressesService,
         AuthService,
         CartsService,
-        CategoriesService,
         CommentsService,
         ImagesService,
         OrdersService,
@@ -104,6 +110,30 @@ const defaultConfig: any = {
         UsersService,
         FileFacade,
         JwtStrategy,
+        {
+            provide: AddressProvider,
+            useClass: AddressRepository,
+        },
+        {
+            provide: AddressUseCase,
+            useClass: AddressesService,
+        },
+        {
+            provide: CategoryProvider,
+            useClass: CategoryRepository,
+        },
+        {
+            provide: CategoryUseCase,
+            useClass: CategoriesService,
+        },
+        {
+            provide: CommentProvider,
+            useClass: CommentRepository,
+        },
+        {
+            provide: CommentUseCase,
+            useClass: CommentsService,
+        },
         /*{
             provide: APP_GUARD,
             useClass: PermissionsGuard,

@@ -1,16 +1,13 @@
-import {ForbiddenException, Injectable} from '@nestjs/common';
-import {InjectRepository} from '@nestjs/typeorm';
-import {User} from 'src/users/user.entity';
-import {Repository} from 'typeorm';
-import {Address} from './address.entity';
-import {CreateAddressDto} from './dto/create-address.dto';
-import {UpdateAddressDto} from './dto/update-address.dto';
+import { ForbiddenException, Injectable } from '@nestjs/common';
+import { User } from 'src/users/user.entity';
+import { Address } from './address.entity';
+import { AddressProvider } from './ports/address.provider';
+import { AddressUseCase, AddressUseCaseTypes } from './ports/address.usecase';
 
 @Injectable()
-export class AddressesService {
+export class AddressesService implements AddressUseCase {
     constructor(
-        @InjectRepository(Address)
-        private repository: Repository<Address>
+        private repository: AddressProvider
     ) {
 
     }
@@ -33,37 +30,34 @@ export class AddressesService {
         const canViewAnyAddress = permissions.includes('view-address-any');
         const canViewOwnAddress = permissions.includes('view-address-own');
 
-        if(!canViewAnyAddress && !canViewOwnAddress) {
+        if (!canViewAnyAddress && !canViewOwnAddress) {
             throw new ForbiddenException();
         }
 
         if (canViewAnyAddress) {
-            return this.repository.find();
+            return this.repository.getRecords();
         }
         if (canViewOwnAddress) {
-            return this.repository.find({customer: {id: currentUserId}});
+            return this.repository.getRecords({ customer_id: currentUserId });
         }
     }
 
-    create(user: User, address: CreateAddressDto) {
-        return this.repository.save({
-            ...address,
-            customer: {id: user.id}
-        });
+    create(user: User, address: AddressUseCaseTypes.CreateAddress) {
+        return this.repository.createRecord(address, user.id);
     }
 
-    update(user: User, address: Address, newAddressInfo: UpdateAddressDto) {
+    update(user: User, address: Address, newAddressInfo: AddressUseCaseTypes.UpdateAddress) {
         if (user.id !== address.customer.id) {
             throw new ForbiddenException();
         }
-        return this.repository.update(address, newAddressInfo);
+        return this.repository.updateRecord(address, newAddressInfo);
     }
 
     delete(user: User, address: Address) {
         if (user.id !== address.customer.id) {
             throw new ForbiddenException();
         }
-        return this.repository.delete(address);
+        return this.repository.deleteRecord(address);
     }
 
 }

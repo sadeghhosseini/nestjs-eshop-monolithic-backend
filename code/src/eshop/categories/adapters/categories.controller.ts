@@ -1,19 +1,21 @@
 import {Body, Controller, Delete, Get, Param, Patch, Post, UseGuards} from '@nestjs/common';
 import {InjectRepository} from '@nestjs/typeorm';
 import {JwtAuthGuard} from 'src/auth/jwt-auth.guard';
+import { IdToEntity } from 'src/common/pipes/id-to-entity.pipe';
 import {RequirePermissions} from 'src/users/permissions.decorator';
 import {PermissionsGuard} from 'src/users/permissions.guard';
 import {Repository} from 'typeorm';
-import {CategoriesService} from './categories.service';
-import {Category} from './category.entity';
-import {CreateCategoryDto} from './dto/create-category.dto';
-import {UpdateCategoryDto} from './dto/update-category.dto';
+import {CategoriesService} from '../categories.service';
+import {Category} from '../category.entity';
+import {CreateCategoryDto} from '../dto/create-category.dto';
+import {UpdateCategoryDto} from '../dto/update-category.dto';
+import { CategoryUseCase } from '../ports/category.usecase';
 
 @Controller()
 export class CategoriesController {
 
     constructor(
-        private service: CategoriesService,
+        private usecases: CategoryUseCase,
     ) {
 
     }
@@ -22,43 +24,43 @@ export class CategoriesController {
     @RequirePermissions('add-category')
     @Post('/categories')
     async create(@Body() body: CreateCategoryDto) {
-        await this.service.create(body);
+        await this.usecases.create(body);
         return;
     }
 
     @Get('/categories')
     async getAll() {
-        return await this.service.getAll();
+        return await this.usecases.getAll();
     }
 
     @Get('/categories/:id')
-    async get(@Param('id') categoryId: string) {
-        return await this.service.get(categoryId);
+    async get(@Param('id', new IdToEntity(Category)) category: Category) {
+        return await this.usecases.get(category);
     }
 
     @UseGuards(JwtAuthGuard, PermissionsGuard)
     @RequirePermissions('delete-category-any')
     @Delete('/categories/:id')
-    async delete(@Param('id') categoryId: string) {
-        await this.service.delete(categoryId);
+    async delete(@Param('id', new IdToEntity(Category)) category: Category) {
+        await this.usecases.delete(category);
         return;
     }
 
     @UseGuards(JwtAuthGuard, PermissionsGuard)
     @RequirePermissions('edit-category-any')
     @Patch('/categories/:id')
-    async update(@Param('id') categoryId: string, @Body() body: UpdateCategoryDto) {
-        await this.service.update(categoryId, body);
+    async update(@Param('id', new IdToEntity(Category)) category: Category, @Body() body: UpdateCategoryDto) {
+        await this.usecases.update(category, body);
         return;
     }
 
     @Get('/categories/:id/products')
-    getProducts(@Param('id') categoryId: string) {
+    getProducts(@Param('id', new IdToEntity(Category)) category: Category) {
 
     }
 
     @Get('/categories/:id/properties')
-    getProperties(@Param('id') categoryId: string) {
+    getProperties(@Param('id', new IdToEntity(Category)) category: Category) {
 
     }
 }

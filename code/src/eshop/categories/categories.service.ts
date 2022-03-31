@@ -1,40 +1,35 @@
 import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
 import { Category } from './category.entity';
+import { CategoryProvider } from './ports/category.provider';
+import { CategoryUseCase, CategoryUseCaseType } from './ports/category.usecase';
 
-interface CategoryType {
-    title: string,
-    description: string,
-}
 
 @Injectable()
-export class CategoriesService {
+export class CategoriesService implements CategoryUseCase {
 
     constructor(
-        @InjectRepository(Category)
-        private categoryRepository: Repository<Category>
+        private categoryProvider: CategoryProvider,
     ) {
 
     }
 
-    create(body: CategoryType): Promise<any> {
-        return this.categoryRepository.save(body);
+    create(body: CategoryUseCaseType.CreateCategory): Promise<any> {
+        return this.categoryProvider.createRecord(body);
     }
 
     getAll(): Promise<any> {
-        return this.categoryRepository.find();
+        return this.categoryProvider.getRecords();
     }
 
-    get(categoryId: string): Promise<any> {
-        return this.categoryRepository.findOne(categoryId);
+    get(category: Category): Promise<any> {
+        return this.categoryProvider.getRecord(category);
     }
 
-    async delete(categoryId: string): Promise<any> {
-        return await this.categoryRepository.delete(categoryId);
+    async delete(category: Category): Promise<any> {
+        return await this.categoryProvider.deleteRecord(category);
     }
 
-    update(categoryId: string, body: CategoryType): Promise<any> {
-        return this.categoryRepository.update(categoryId, body);
+    update(category: Category, body: CategoryUseCaseType.UpdateCategory): Promise<any> {
+        return this.categoryProvider.updateRecord(category, body);
     }
 }

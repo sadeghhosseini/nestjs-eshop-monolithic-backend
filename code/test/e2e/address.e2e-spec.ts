@@ -6,6 +6,7 @@ import {getManager} from 'typeorm';
 import {setupTestModule} from '../test-helpers/setup-test-module.helper';
 import {request} from '../test-helpers/request.helper';
 import {queries} from "../test-helpers/query.helper";
+import { collection } from 'test/test-helpers/collection.helper';
 
 describe('AddressController - e2e', () => {
     describe('GET /addresses', () => {
@@ -102,7 +103,7 @@ describe('AddressController - e2e', () => {
             const response = await request.authenticate(app, {
                 user,
                 permissions: ['add-address-own']
-            }).post(app, '/addresses', address);
+            }).post(app, '/addresses', collection.except(address, ['customer']));
             expect(response.status).toBe(201);
             const records = await getManager().find(Address, {relations: ['customer']});
             expect(records.length).toBe(1);

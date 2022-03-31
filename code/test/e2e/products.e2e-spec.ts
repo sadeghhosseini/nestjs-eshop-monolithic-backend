@@ -1,6 +1,6 @@
 import {INestApplication} from '@nestjs/common';
 import {CategoryFactory, ProductFactory, PropertyFactory} from 'test/factories.helper';
-import {except,} from 'test/test-helpers/collection.helper';
+import {collection} from 'test/test-helpers/collection.helper';
 import {setupTestModule} from 'test/test-helpers/setup-test-module.helper';
 import {getManager} from "typeorm";
 import {Product} from "../../src/eshop/products/product.entity";
@@ -175,7 +175,7 @@ describe(`PATCH /products`, () => {
 
     it('returns 200 - updates a products non relational data', async () => {
         const product = await ProductFactory.get().create();
-        const updatedProduct = except(await ProductFactory.get().make(), ['category_id']);
+        const updatedProduct = collection.except(await ProductFactory.get().make(), ['category_id']);
         /*const response = await request(app.getHttpServer())
             .patch(`/products/${product.id}`)
             .send({
