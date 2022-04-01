@@ -64,6 +64,13 @@ import { CategoryUseCase } from "src/eshop/categories/ports/category.usecase";
 import { CommentProvider } from "src/eshop/comments/ports/comment.provider";
 import { CommentRepository } from "src/eshop/comments/adapters/comment.repository";
 import { CommentUseCase } from "src/eshop/comments/ports/comment.usecase";
+import { ProductProvider } from "src/eshop/products/ports/product.provider";
+import { ProductRepository } from "src/eshop/products/adapters/product.repository";
+import { ProductUseCase } from "src/eshop/products/ports/product.usecase";
+import { PropertyProvider } from "src/eshop/properties/prots/property.provider";
+import { PropertyRepository } from "src/eshop/properties/adapters/property.repository";
+import { ImageProvider } from "src/eshop/images/ports/image.provider";
+import { ImageRepository } from "src/eshop/images/adapters/image.repository";
 
 const defaultConfig: any = {
     entities: [
@@ -105,7 +112,6 @@ const defaultConfig: any = {
         ImagesService,
         OrdersService,
         PaymentsService,
-        ProductsService,
         PropertiesService,
         UsersService,
         FileFacade,
@@ -134,6 +140,22 @@ const defaultConfig: any = {
             provide: CommentUseCase,
             useClass: CommentsService,
         },
+        {
+            provide: ProductProvider,
+            useClass: ProductRepository,
+        },
+        {
+            provide: ProductUseCase,
+            useClass: ProductsService,
+        },
+        {
+            provide: PropertyProvider,
+            useClass: PropertyRepository,
+        },
+        {
+            provide: ImageProvider,
+            useClass: ImageRepository,
+        }
         /*{
             provide: APP_GUARD,
             useClass: PermissionsGuard,

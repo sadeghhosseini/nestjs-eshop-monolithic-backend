@@ -1,20 +1,21 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from "@nestjs/typeorm";
 import { Product } from "./product.entity";
-import { getConnection, getManager, Repository } from "typeorm";
+import { getConnection, Repository } from "typeorm";
 import { Property } from "../properties/property.entity";
-import { UpdateProductDto } from './dto/update-product.dto';
-import { Category } from 'src/eshop/categories/category.entity';
 import { Image } from 'src/eshop/images/image.entity';
 import { ConfigService } from '@nestjs/config';
+import { ProductProvider } from './ports/product.provider';
+import { ProductUseCase, ProductUseCaseTypes } from './ports/product.usecase';
+import { PropertyProvider } from '../properties/prots/property.provider';
+import { ImageProvider } from '../images/ports/image.provider';
 
 @Injectable()
-export class ProductsService {
+export class ProductsService implements ProductUseCase {
     constructor(
-        @InjectRepository(Product)
-        private productRepository: Repository<Product>,
-        @InjectRepository(Property)
-        private propertyRepository: Repository<Property>,
+        private productProvider: ProductProvider,
+        private propertyProvider: PropertyProvider,
+        private imageProvider: ImageProvider,
         private configService: ConfigService,
     ) {
     }
@@ -23,7 +24,7 @@ export class ProductsService {
      * TODO add upload image capability
      * @param data 
      */
-    async create(data: InputCreateType) {
+    async create(data: ProductUseCaseTypes.CreateProduct) {
         const {
             title,
             description,
@@ -39,15 +40,12 @@ export class ProductsService {
         await getConnection().transaction(async entityManager => {
             let data: { properties?: Array<{ id: number }> } = {};
             if (newPropertyTitles?.length > 0) {
-                const newProperties = newPropertyTitles.map((title) => ({
-                    title: title,
-                    isVisible: true,
-                    category: {
-                        id: category_id
-                    }
+                const newProperties = newPropertyTitles.map(title => ({
+                    title,
+                    category_id,
                 }));
-                const insertResult = await entityManager.insert(Property, newProperties);
-                const ids: Array<{ id: number }> = insertResult.identifiers as Array<{ id: number }>;
+                const properties = await this.propertyProvider.createRecords(newProperties);
+                const ids = properties.map(p => ({ id: p.id }));
                 data = {
                     ...data,
                     properties: ids,
@@ -71,12 +69,12 @@ export class ProductsService {
                         ...imagesInfo,
                         { path: this.configService.get<string>('UPLOAD_PATH') + image.originalname }
                     ];
-                    
+
                 }
-                return entityManager.save(Image, imagesInfo);
+                return this.imageProvider.createRecords(imagesInfo);
             }
 
-            return await entityManager.save(Product, {
+            return await this.productProvider.createRecord({
                 title,
                 description,
                 quantity,
@@ -95,7 +93,7 @@ export class ProductsService {
      * @param body 
      * @returns 
      */
-    async update(product: Product, body: InputUpdateType) {
+    async update(product: Product, body: ProductUseCaseTypes.UpdateProduct) {
         // const product = await this.productRepository.findOne(productId, { relations: ['category', 'properties'] });
         if (product) {
             product.title = body?.title ?? product?.title;
@@ -113,47 +111,22 @@ export class ProductsService {
             }
 
             if (body.new_properties?.length > 0) {
-                const properties = await this.propertyRepository.save(body.new_properties.map(title => {
-                    const property = new Property();
-                    property.title = title;
-                    property.is_visible = true;
-                    return property;
-                }))
+                const properties = await this.propertyProvider.createRecords(body.new_properties.map(title => ({ title, category_id: product.category.id })));
+                console.log(properties);
                 product.properties = [
                     ...product.properties,
                     ...properties,
                 ]
             }
 
-            return await this.productRepository.save(product);
+            return await this.productProvider.updateRecord(product);
         } else {
             throw new BadRequestException();
         }
     }
 
     async delete(product: Product) {
-        return await this.productRepository.delete(product.id);
+        return await this.productProvider.deleteRecord(product);
     }
 
-}
-
-
-interface InputCreateType {
-    title: string;
-    description: string;
-    quantity: number;
-    price: number;
-    category_id: number;
-    new_properties?: string[];
-    property_ids?: number[];
-    new_images?: Array<Express.Multer.File>;
-}
-interface InputUpdateType {
-    title?: string;
-    description?: string;
-    quantity?: number;
-    price?: number;
-    category_id?: number;
-    new_properties?: string[];
-    property_ids?: number[];
 }

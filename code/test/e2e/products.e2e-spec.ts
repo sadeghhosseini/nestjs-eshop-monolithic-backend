@@ -273,6 +273,9 @@ describe(`PATCH /products`, () => {
             ...properties.map(property => property.title),
             ...propertyTitles,
         ]);
+        const foundProperties = await getManager().find(Property, {relations: ['category']});
+        expect(foundProperties).toHaveLength(properties.length + propertyTitles.length);
+        expect(foundProperties.filter(fp => propertyTitles.includes(fp.title))[0].category.id).toEqual(product.category.id);
     });
 });
 

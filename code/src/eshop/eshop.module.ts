@@ -53,6 +53,10 @@ import { CategoryRepository } from './categories/adapters/category.repository';
 import { CommentProvider } from './comments/ports/comment.provider';
 import { CommentUseCase } from './comments/ports/comment.usecase';
 import { CommentRepository } from './comments/adapters/comment.repository';
+import { PropertyProvider } from './properties/prots/property.provider';
+import { PropertyRepository } from './properties/adapters/property.repository';
+import { ImageProvider } from './images/ports/image.provider';
+import { ImageRepository } from './images/adapters/image.repository';
 
 @Module({
     imports: [
@@ -125,6 +129,14 @@ import { CommentRepository } from './comments/adapters/comment.repository';
         {
             provide: CommentUseCase,
             useClass: CommentsService,
+        },
+        {
+            provide: PropertyProvider,
+            useClass: PropertyRepository,
+        },
+        {
+            provide: ImageProvider,
+            useClass: ImageRepository,
         },
     ],
 })

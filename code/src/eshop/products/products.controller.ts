@@ -23,12 +23,14 @@ import {PermissionsGuard} from 'src/users/permissions.guard';
 import {ValidationException} from 'test/test-exceptions/validation.exception';
 import {CreateProductDto} from "./dto/create-product.dto";
 import {UpdateProductDto} from './dto/update-product.dto';
+import { ProductProvider } from './ports/product.provider';
+import { ProductUseCase } from './ports/product.usecase';
 import {Product} from './product.entity';
 import {ProductsService} from "./products.service";
 
 @Controller()
 export class ProductsController {
-    constructor(private service: ProductsService) {
+    constructor(private productUseCases: ProductUseCase) {
     }
 
     @UseGuards(JwtAuthGuard, PermissionsGuard)
@@ -46,7 +48,7 @@ export class ProductsController {
         if (validationErrors.length > 0) {
             throw new ValidationException(validationErrors);
         }
-        await this.service.create({
+        await this.productUseCases.create({
             ...cpd,
             new_images: images,
         });
@@ -69,7 +71,7 @@ export class ProductsController {
     @RequirePermissions('edit-product-any')
     @Patch('/products/:id')
     async update(@Param('id', new IdToEntity(Product, ['category', 'properties'])) product: Product, @Body() body: UpdateProductDto) {
-        await this.service.update(product, body);
+        await this.productUseCases.update(product, body);
         return;
     }
 
@@ -77,7 +79,7 @@ export class ProductsController {
     @RequirePermissions('delete-product-any')
     @Delete('/products/:id')
     async delete(@Param('id', new IdToEntity(Product)) product: Product) {
-        return await this.service.delete(product);
+        return await this.productUseCases.delete(product);
     }
 
     @Get('/products/:id/images')
